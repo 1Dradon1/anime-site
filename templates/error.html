@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Ошибка{% endblock %}
+
+{% block content %}
+<div style="margin-top: 40px; margin-bottom: 60px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 50vh;">
+    <div style="font-size: 4rem; margin-bottom: 20px;">
+        <span style="display: inline-block; animation: pop 0.5s ease-out forwards;">Oops!</span>
+    </div>
+    <h1 style="margin-bottom: 20px;">По данному запросу <span style="color: var(--primary-color);">нет данных</span></h1>
+    
+    <div class="glass-card" style="padding: 30px; max-width: 600px; width: 100%; border-left: 4px solid var(--primary-color);">
+        <p style="color: var(--text-muted); font-size: 1.1rem; line-height: 1.6; margin-bottom: 0;">
+            К сожалению, мы не смогли найти видеофайлы или переводы для этого аниме в нашей базе. <br>Возможно, оно ещё не вышло или заблокировано правообладателем.
+        </p>
+
+        {% if debug_msg %}
+        <style>
+            #error-desc { margin-bottom: 20px !important; }
+        </style>
+        <div style="text-align: left; padding: 15px; background: rgba(0,0,0,0.2); border-radius: var(--radius-sm); border: 1px solid var(--surface-glass-border); overflow-x: auto; margin-top: 20px;">
+            <p style="color: #ff6b6b; font-family: monospace; font-size: 0.9rem; margin: 0;">Exception Info (Debug):</p>
+            <p style="color: var(--text-muted); font-family: monospace; font-size: 0.85rem; margin-top: 5px;">{{ debug_msg }}</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <a href="/" class="btn-modern" style="margin-top: 40px;">Вернуться на главную</a>
+</div>
+
+<style>
+    @keyframes pop {
+        0% { transform: scale(0.8); opacity: 0; }
+        70% { transform: scale(1.1); }
+        100% { transform: scale(1); opacity: 1; }
+    }
+</style>
+{% endblock %}

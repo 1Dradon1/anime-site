@@ -115,10 +115,7 @@ def download_shiki_choose_translation(serv, id):
                 # Получаем данные о наличии переводов от кодика
                 serial_data = get_serial_info(id, "shikimori", token)
             except Exception as ex:
-                return f"""
-                <h1>По данному запросу нет данных</h1>
-                {f'<p>Exception type: {ex}</p>' if config.DEBUG else ''}
-                """
+                return render_template('error.html', debug_msg=str(ex) if config.DEBUG else None, is_dark=session['is_dark'] if "is_dark" in session.keys() else False), 404
         cache_used = False
         if ch_use and ch.is_id("sh"+id):
             # Проверка кеша на наличие данных
@@ -194,10 +191,7 @@ def download_shiki_choose_translation(serv, id):
             # Получаем данные о наличии переводов от кодика
             serial_data = get_serial_info(id, "kinopoisk", token)
         except Exception as ex:
-            return f"""
-            <h1>По данному запросу нет данных</h1>
-            {f'<p>Exception type: {ex}</p>' if config.DEBUG else ''}
-            """
+            return render_template('error.html', debug_msg=str(ex) if config.DEBUG else None, is_dark=session['is_dark'] if "is_dark" in session.keys() else False), 404
         return render_template('info.html', 
             title="...", image=config.IMAGE_NOT_FOUND, score="...", translations=serial_data['translations'], series_count=serial_data["series_count"], id=id, 
             dtype="...", date="...", status="...", description='...', is_shiki=False, serv=serv,
