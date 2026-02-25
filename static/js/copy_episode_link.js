@@ -52,11 +52,10 @@ async function fetchAndOpenMPV(event) {
         }
 
         const text = await response.text();
+        save_last_watched(shikimori_id, ep_value, translation_id);
         window.location.href = `mpv://${encodeURIComponent(text)}`;
         
         if (notification) showNotification(notification, "Открываю MPV!", 2000);
-        
-        save_last_watched(shikimori_id, ep_value, translation_id);
     } catch (err) {
         console.error('Ошибка:', err);
         if (notification) showNotification(notification, "Ошибка открытия :(", 3000);
