@@ -1,4 +1,4 @@
-KODIK_TOKEN = "b714ce2b8d2ce9bcf77556558370c0ab"
+KODIK_TOKEN = None
 SHIKIMORI_MIRROR = None # Домен зеркало для shikimori. None = параметр из парсера по умолчанию
 APP_SECRET_KEY = "some_super_secret_key"
 DEBUG = True # Debug от Flask
