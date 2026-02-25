@@ -1,10 +1,11 @@
-from flask import Flask, render_template, request, redirect, abort, session, send_file, send_from_directory
+from flask import Flask, render_template, request, redirect, abort, session, send_file, send_from_directory, Response, stream_with_context
 from flask_socketio import SocketIO, send, emit, join_room, leave_room
 from flask_mobility import Mobility
 from flask_httpauth import HTTPBasicAuth
 from getters import *
 from fast_download import clear_tmp, fast_download, get_path
 import watch_together
+import json
 from json import load
 import config
 import os
@@ -52,12 +53,12 @@ def index():
 @app.route('/', methods=['POST'])
 def index_form():
     data = dict(request.form)
-    if 'shikimori_id' in data.keys():
-        return redirect(f"/download/sh/{data['shikimori_id']}/")
-    if 'kinopoisk_id' in data.keys():
-        return redirect(f"/download/kp/{data['kinopoisk_id']}/")
-    elif 'kdk' in data.keys(): # kdk = Kodik
-        return redirect(f"/search/kdk/{data['kdk']}/")
+    if data.get('shikimori_id'):
+        return redirect(f"/download/sh/{data['shikimori_id'].strip()}/")
+    elif data.get('kinopoisk_id'):
+        return redirect(f"/download/kp/{data['kinopoisk_id'].strip()}/")
+    elif data.get('kdk'): # kdk = Kodik
+        return redirect(f"/search/kdk/{data['kdk'].strip()}/")
     else:
         return abort(400)
     
@@ -73,15 +74,23 @@ def change_theme():
 @app.route('/search/<string:db>/<string:query>/')
 def search_page(db, query):
     if db == "kdk":
-        try:
-            # Попытка получить данные с кодика
-            s_data = get_search_data(query, token, ch if ch_save or ch_use else None)
-            return render_template('search.html', items=s_data[0], others=s_data[1], is_dark=session['is_dark'] if "is_dark" in session.keys() else False)
-        except:
-            return render_template('search.html', is_dark=session['is_dark'] if "is_dark" in session.keys() else False)
+        return render_template('search.html', query=query, is_dark=session['is_dark'] if "is_dark" in session.keys() else False)
     else:
         # Другие базы не поддерживаются (возможно в будущем будут)
         return abort(400)
+
+@app.route('/api/search/stream/<string:db>/<string:query>/')
+def search_stream(db, query):
+    if db != "kdk":
+        return abort(400)
+    def generate():
+        try:
+            for item in stream_search_data(query, token, ch if ch_save or ch_use else None):
+                yield f"data: {json.dumps(item)}\n\n"
+        except Exception as e:
+            yield f"data: {json.dumps({'error': str(e)})}\n\n"
+        yield "event: close\ndata: close\n\n"
+    return Response(stream_with_context(generate()), mimetype='text/event-stream')
 
 @app.route('/download/<string:serv>/<string:id>/')
 def download_shiki_choose_translation(serv, id):
