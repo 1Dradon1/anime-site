@@ -507,7 +507,7 @@ def fast_download_work(id_type: str, id: str, seria_num: int, translation_id: st
                 ch.add_seria("kp"+id, translation_id, seria_num, link)
             except KeyError:
                 pass
-        return send_file(get_path(hsh), as_attachment=True)
+        return send_file(get_path(hsh), as_attachment=True, download_name=fname + '.mp4')
     except ModuleNotFoundError:
         return abort(500, 'Внимание, на сервере не установлен ffmpeg или программа не может получить к нему доступ. Ffmpeg обязателен для использования быстрой загрузки. (Стандартная загрузка работает без ffmpeg)')
     except FileNotFoundError:
@@ -584,16 +584,12 @@ def guide():
     """
     return render_template('guide.html', is_dark=session.get('is_dark', False))
 
-@app.route('/download')
-def download_file():
-    # Отправка файла клиенту
-    """
-    Send the bundled application ZIP file to the client as a downloadable attachment.
-    
-    Returns:
-        response: A Flask response object that serves the file "dgnmpv.zip" from the application's static directory and prompts the client to download it.
-    """
-    return send_from_directory("./static/", 'dgnmpv.zip', as_attachment=True)
+@app.route('/download/<string:version>')
+def download_file(version: str):
+    if version == 'low':
+        return send_from_directory("./static/", 'dgnmpv-low-end.zip', as_attachment=True, download_name='dgnmpv-low-end.zip')
+    elif version == 'high':
+        return send_from_directory("./static/", 'dgnmpv.zip', as_attachment=True, download_name='dgnmpv.zip')
 
 @app.route('/favicon.ico')
 def favicon():

@@ -21,7 +21,7 @@
                 Оптимально для мощных видеокарт (GTX 1080, RTX 20/30/40 серий, RX 5700XT+). 
                 Включает продвинутые шейдеры для улучшения картинки.
             </p>
-            <a href="{{ url_for('download_file') }}?version=high" class="btn-modern btn-full">
+            <a href="{{ url_for('download_file', version='high') }}" class="btn-modern btn-full">
                 Скачать dgnmpv.zip
             </a>
             <p class="small-meta">~ 45 MB</p>
@@ -35,7 +35,7 @@
                 Для более слабых систем или ноутбуков (GTX 1060, GTX 960, встройки). 
                 Облегченная конфигурация для стабильной работы.
             </p>
-            <a href="{{ url_for('download_file') }}?version=low" class="btn-modern btn-secondary btn-full">
+            <a href="{{ url_for('download_file', version='low') }}" class="btn-modern btn-secondary btn-full">
                 Скачать dgnmpv-low.zip
             </a>
             <p class="small-meta">~ 40 MB</p>
