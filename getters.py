@@ -185,6 +185,60 @@ def get_search_data(search_query: str, token: str | None, ch: Cache = None):
     others = sorted(others, key=lambda x: x['date'], reverse=True)
     return (items, others)
 
+def stream_search_data(search_query: str, token: str | None, ch: Cache = None):
+    if USE_KODIK_SEARCH:
+        search_res = kodik_parser.search(search_query, limit=50)
+    else:
+        search_res = shiki_parser.search(search_query)
+
+    used_ids = []
+    for item in search_res:
+        # Проверка на наличие shikimori_id и на отсутствие его в уже добавленных тайтлах
+        if 'shikimori_id' in item.keys() and item['shikimori_id'] != None and item['shikimori_id'] not in used_ids:
+            if ch != None and ch.is_id("sh"+item['shikimori_id']): # Проверка на наличие данных в кеше
+                ser_data = ch.get_data_by_id("sh"+item['shikimori_id'])
+            else: # Если данных в кеше нет или кеш не используется
+                try:
+                    ser_data = get_shiki_data(item['shikimori_id'])
+                except RuntimeWarning:
+                    continue
+                if ch != None:
+                    ch.add_id("sh"+item['shikimori_id'],
+                        ser_data['title'], ser_data['image'], ser_data['score'], ser_data['status'], ser_data['date'], ser_data['year'], ser_data['type'], ser_data['rating'], ser_data['description'])
+            dd = {
+                'category': 'anime',
+                'image': ser_data['image'] if ser_data['image'] != None else config.IMAGE_NOT_FOUND,
+                'id': item['shikimori_id'],
+                'type': ser_data['type'],
+                'date': ser_data['date'],
+                'title': item['title'],
+                'status': ser_data['status'],
+                'year': ser_data['year'],
+                'description': ser_data['description']
+            }
+            used_ids.append(item['shikimori_id'])
+            yield dd
+        elif "kinopoisk_id" in item.keys() and item['kinopoisk_id'] != None and ('shikimori_id' not in item.keys() or item['shikimori_id'] is None) and item['kinopoisk_id'] not in used_ids:
+            if item['type'] == "foreign-movie":
+                ctype = "Иностранный фильм"
+            elif item['type'] == "foreign-serial":
+                ctype = "Иностранный сериал"
+            elif item['type'] == "russian-movie":
+                ctype = "Русский фильм"
+            elif item['type'] == "russian-serial":
+                ctype = "Русский сериал"
+            else:
+                ctype = item['type']
+            dd = {
+                'category': 'other',
+                "id": item['kinopoisk_id'],
+                "title": item['title'],
+                "type": ctype,
+                "date": item['year']
+            }
+            used_ids.append(item['kinopoisk_id'])
+            yield dd
+
 def get_shiki_data(id: str, retries: int = 3):
     if retries <= 0:
         print(f"Max retries getting data exceeded. Id: {id}")

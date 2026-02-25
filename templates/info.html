@@ -83,13 +83,14 @@
         padding: 15px 25px;
         pointer-events: none;
         opacity: 0;
+        visibility: hidden;
         transform: translateY(10px);
         transition: var(--transition-smooth);
     }
     .copied.visible {
         opacity: 1;
-        transform: translateY(0);
         visibility: visible;
+        transform: translateY(0);
     }
     .related-scroll {
         display: flex;
@@ -146,7 +147,7 @@
     <div class="related-scroll">
         {% for item in related %}
         <a href="{{ item['internal_link'] }}" class="glass-card related-card">
-            <img src="{{ item['picture'] }}" style="width: 100px; height: 140px; object-fit: cover; border-radius: 8px;">
+            <img src="{{ item['picture'] }}" alt="{{ item.get('name', '') }}" style="width: 100px; height: 140px; object-fit: cover; border-radius: 8px;">
             <div style="overflow: hidden;">
                 <h4 style="margin-bottom: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 1rem;">{{ item['name'] }}</h4>
                 <p style="font-size: 0.8rem; color: var(--text-muted);">
@@ -195,7 +196,7 @@
                     <button class="episode-number" value="0" 
                             data-translation-id="{{ translation.id }}" 
                             data-shikimori-id="{{ id }}"
-                            data-web-url="/watch/{{ serv }}/{{ id }}/{{ translation.series_count }}-{{ translation.id }}/0/"
+                            data-web-url="/watch/{{ serv }}/{{ id }}/{{ translation.series_count|default(0) }}-{{ translation.id }}/0/"
                     >Фильм</button>
                 {% endif %}
             </div>
@@ -222,8 +223,8 @@
                             <button class="episode-number" value="0" 
                                     data-translation-id="{{ translation.id }}" 
                                     data-shikimori-id="{{ id }}"
-                                    data-web-url="/watch/{{ serv }}/{{ id }}/{{ translation.series_count }}-{{ translation.id }}/0/"
-                            >0</button>
+                                    data-web-url="/watch/{{ serv }}/{{ id }}/{{ translation.series_count|default(0) }}-{{ translation.id }}/0/"
+                            >Фильм</button>
                         {% endif %}
                     </div>
                 </div>

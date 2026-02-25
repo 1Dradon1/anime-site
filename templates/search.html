@@ -9,49 +9,33 @@
     <div class="glass-card" style="padding: 20px; margin-bottom: 60px;">
         <form method="POST" novalidate action="/">
             <div style="display: flex; gap: 15px;">
-                <input class="search-input-modern" name="kdk" placeholder="Искать аниме..." required autocomplete="off">
+                <input class="search-input-modern" name="kdk" placeholder="Искать аниме..." required autocomplete="off" value="{{ query }}">
                 <button type="submit" class="btn-modern">Поиск</button>
             </div>
         </form>
     </div>
 
-    {% if items %}
-    <h2 style="margin-bottom: 30px; font-size: 1.5rem;">Аниме:</h2>
-    <div class="search-results-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px;">
-        {% for item in items %}
-        <a href="/download/sh/{{ item.id }}/" class="glass-card search-card fade-in" style="display: flex; gap: 20px; overflow: hidden; height: 180px;">
-            <img src="{{ item.image }}" style="width: 120px; height: 100%; object-fit: cover; border-right: 1px solid var(--surface-glass-border);" loading="lazy">
-            <div style="padding: 20px; display: flex; flex-direction: column; justify-content: center; overflow: hidden;">
-                <h3 style="font-size: 1.1rem; margin-bottom: 10px; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ item.title }}</h3>
-                <div style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.4;">
-                    <p>Тип: {{ item.type }}</p>
-                    <p>Статус: {{ item.status }}</p>
-                    <p>Даты: {{ item.date }}</p>
-                </div>
-            </div>
-        </a>
-        {% endfor %}
+    <!-- Индикатор загрузки -->
+    <div id="loading-indicator" style="text-align: center; margin-bottom: 30px;">
+        <div style="font-size: 2.5rem; display: inline-block; animation: spin 1s linear infinite;">⏳</div>
+        <p style="color: var(--text-muted); margin-top: 15px; font-weight: 500;">Ищем аниме...</p>
     </div>
-    {% else %}
-    <div class="glass-card" style="padding: 40px; text-align: center;">
-        <h3 style="color: var(--text-muted);">По вашему запросу ничего не найдено</h3>
-    </div>
-    {% endif %}
 
-    {% if others %}
-    <div style="margin-top: 60px;">
+    <h2 id="anime-header" style="margin-bottom: 30px; font-size: 1.5rem; display: none;">Аниме:</h2>
+    <div id="anime-results" class="search-results-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px;">
+        <!-- Сюда динамически добавляются результаты аниме -->
+    </div>
+
+    <div id="others-section" style="margin-top: 60px; display: none;">
         <h2 style="margin-bottom: 30px; font-size: 1.5rem;">Прочее:</h2>
-        <div class="others-list" style="display: grid; gap: 10px;">
-            {% for item in others %}
-            <a href="/download/kp/{{ item.id }}/" class="glass-card" style="padding: 15px 25px; display: block;">
-                <span style="color: var(--text-muted); margin-right: 10px;">{{ item.type }}</span>
-                <span style="font-weight: 500;">{{ item.title }}</span>
-                <span style="float: right; color: var(--text-muted); font-size: 0.9rem;">{{ item.date }}</span>
-            </a>
-            {% endfor %}
+        <div id="others-list" class="others-list" style="display: grid; gap: 10px;">
+            <!-- Сюда динамически добавляются другие результаты -->
         </div>
     </div>
-    {% endif %}
+
+    <div id="no-results" class="glass-card fade-in" style="padding: 40px; text-align: center; display: none;">
+        <h3 style="color: var(--text-muted);">По вашему запросу ничего не найдено</h3>
+    </div>
 </div>
 
 <style>
@@ -63,5 +47,90 @@
         border-color: var(--primary-color);
         box-shadow: 0 10px 30px rgba(0,0,0,0.4);
     }
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
 </style>
+{% endblock %}
+
+{% block scripts %}
+<script type="application/json" id="search-query">{{ query|tojson }}</script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const queryStr = JSON.parse(document.getElementById('search-query').textContent);
+        const animeContainer = document.getElementById('anime-results');
+        const animeHeader = document.getElementById('anime-header');
+        const othersSection = document.getElementById('others-section');
+        const othersList = document.getElementById('others-list');
+        const loading = document.getElementById('loading-indicator');
+        const noResults = document.getElementById('no-results');
+        let totalFound = 0;
+
+        const eventSource = new EventSource(`/api/search/stream/kdk/${encodeURIComponent(queryStr)}/`);
+
+        eventSource.onmessage = function(e) {
+            const item = JSON.parse(e.data);
+            if (item.error) {
+                console.error("Search error:", item.error);
+                return;
+            }
+
+            totalFound++;
+            
+            if (item.category === 'anime') {
+                animeHeader.style.display = 'block';
+                
+                const a = document.createElement('a');
+                a.href = `/download/sh/${item.id}/`;
+                a.className = "glass-card search-card fade-in";
+                a.style.cssText = "display: flex; gap: 20px; overflow: hidden; height: 180px;";
+                
+                a.innerHTML = `
+                    <img src="${item.image}" style="width: 120px; height: 100%; object-fit: cover; border-right: 1px solid var(--surface-glass-border);" loading="lazy">
+                    <div style="padding: 20px; display: flex; flex-direction: column; justify-content: center; overflow: hidden; min-width: 0;">
+                        <h3 style="font-size: 1.1rem; margin-bottom: 10px; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.title}</h3>
+                        <div style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; overflow: hidden;">
+                            <p style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Тип: ${item.type}</p>
+                            <p style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Статус: ${item.status}</p>
+                            <p style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Даты: ${item.date}</p>
+                        </div>
+                    </div>
+                `;
+                animeContainer.appendChild(a);
+            } else if (item.category === 'other') {
+                othersSection.style.display = 'block';
+                
+                const a = document.createElement('a');
+                a.href = `/download/kp/${item.id}/`;
+                a.className = "glass-card fade-in";
+                a.style.cssText = "padding: 15px 25px; display: block;";
+                
+                a.innerHTML = `
+                    <span style="color: var(--text-muted); margin-right: 10px;">${item.type}</span>
+                    <span style="font-weight: 500;">${item.title}</span>
+                    <span style="float: right; color: var(--text-muted); font-size: 0.9rem;">${item.date}</span>
+                `;
+                othersList.appendChild(a);
+            }
+        };
+
+        eventSource.addEventListener('close', function(e) {
+            eventSource.close();
+            loading.style.display = 'none';
+            if (totalFound === 0) {
+                noResults.style.display = 'block';
+            }
+        });
+
+        eventSource.onerror = function(e) {
+            eventSource.close();
+            loading.style.display = 'none';
+            if (totalFound === 0) {
+                 noResults.style.display = 'block';
+                 noResults.innerHTML = '<h3 style="color: var(--text-muted);">Произошла ошибка при поиске или соединение прервано</h3>';
+            }
+        };
+    });
+</script>
 {% endblock %}

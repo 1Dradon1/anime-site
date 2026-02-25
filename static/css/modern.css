@@ -29,7 +29,7 @@
 body {
     background-color: var(--bg-color);
     color: var(--text-main);
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-family: Inter, system-ui, -apple-system, sans-serif;
     line-height: 1.6;
     overflow-x: hidden;
     background-image: 
@@ -131,13 +131,13 @@ a:hover {
 }
 
 /* Animations */
-@keyframes fadeIn {
+@keyframes fade-in {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
 }
 
 .fade-in {
-    animation: fadeIn 0.5s ease forwards;
+    animation: fade-in 0.5s ease forwards;
 }
 
 /* Toggle Switch */
@@ -224,3 +224,14 @@ input:checked + .slider-modern:before {
 .modal-close:hover {
     color: var(--primary-color);
 }
+
+/* Helper Classes */
+.fade-in-margin-top { margin-top: 40px; }
+.card-padding { padding: 30px; display: flex; flex-direction: column; }
+.card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 30px; margin-bottom: 40px; }
+.primary-top-border { border-top: 4px solid var(--primary-color); }
+.accent-top-border { border-top: 4px solid var(--accent-color); }
+.muted-text { color: var(--text-muted); }
+.lead-text { max-width: 700px; margin: 0 auto; font-size: 1.1rem; }
+.btn-full { width: 100%; }
+.small-meta { font-size: 0.8rem; color: var(--text-muted); margin-top: 15px; text-align: center; }
