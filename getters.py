@@ -13,7 +13,7 @@ if config.USE_LXML:
 
 USE_KODIK_SEARCH = False
 
-if config.KODIK_TOKEN is None:
+if not config.KODIK_TOKEN:
     try:
         # Проверяем, может ли токен получить доступ к апи полностью
         kodik_parser = KodikParser(use_lxml=config.USE_LXML, validate_token=True)
@@ -23,12 +23,12 @@ if config.KODIK_TOKEN is None:
         kodik_parser = KodikParser(use_lxml=config.USE_LXML, validate_token=False)
     else:
         # Если ошибки по токену нет, значит используем поиск по кодику
-        USE_KODIK_SEARCH = True
+        USE_KODIK_SEARCH = False # Оставляем поиск через шикимори приоритетным
 else:
     # Токен указан в конфиге, поэтому принимается за полностью рабочий
     # и проходит полную валидацию
     kodik_parser = KodikParser(token=config.KODIK_TOKEN, use_lxml=config.USE_LXML, validate_token=True)
-    USE_KODIK_SEARCH = True
+    USE_KODIK_SEARCH = False # Оставляем поиск через шикимори приоритетным
 
 shiki_parser = ShikimoriParser(use_lxml=config.USE_LXML, mirror=config.SHIKIMORI_MIRROR)
 
@@ -125,71 +125,9 @@ def get_serial_info(id: str, id_type: str, token: str) -> dict:
 def get_download_link(id: str, id_type: str, seria_num: int, translation_id: str, token: str):
     return kodik_parser.get_link(id, id_type, seria_num, translation_id)[0]
 
-def get_search_data(search_query: str, token: str | None, ch: Cache = None):
-    if USE_KODIK_SEARCH:
-        search_res = kodik_parser.search(search_query, limit=50)
-    else:
-        search_res = shiki_parser.search(search_query)
-        # Если хотите использовать GraphQL для поиска, то закомментируйте строку выше, и раскомментируйте эту
-        # search_res = [{"shikimori_id": x['id'], 'title': x['russian']} for x in shiki_parser.deep_search(search_query, return_parameters=['id', 'russian'])]
-
-    items = []
-    others = []
-    used_ids = []
-    for item in search_res:
-        # Проверка на наличие shikimori_id и на отсутствие его в уже добавленных тайтлах
-        if 'shikimori_id' in item.keys() and item['shikimori_id'] != None and item['shikimori_id'] not in used_ids:
-            if ch != None and ch.is_id("sh"+item['shikimori_id']): # Проверка на наличие данных в кеше
-                ser_data = ch.get_data_by_id("sh"+item['shikimori_id'])
-            else: # Если данных в кеше нет или кеш не используется
-                try:
-                    ser_data = get_shiki_data(item['shikimori_id'])
-                except RuntimeWarning:
-                    continue
-                if ch != None:
-                    ch.add_id("sh"+item['shikimori_id'],
-                        ser_data['title'], ser_data['image'], ser_data['score'], ser_data['status'], ser_data['date'], ser_data['year'], ser_data['type'], ser_data['rating'], ser_data['description'])
-            dd = {
-                'image': ser_data['image'] if ser_data['image'] != None else config.IMAGE_NOT_FOUND,
-                'id': item['shikimori_id'],
-                'type': ser_data['type'],
-                'date': ser_data['date'],
-                'title': item['title'],
-                'status': ser_data['status'],
-                'year': ser_data['year'],
-                'description': ser_data['description']
-            }
-            items.append(dd)
-            used_ids.append(item['shikimori_id'])
-        elif "kinopoisk_id" in item.keys() and item['kinopoisk_id'] != None and ('shikimori_id' not in item.keys() or item['shikimori_id'] is None) and item['kinopoisk_id'] not in used_ids:
-            if item['type'] == "foreign-movie":
-                ctype = "Иностранный фильм"
-            elif item['type'] == "foreign-serial":
-                ctype = "Иностранный сериал"
-            elif item['type'] == "russian-movie":
-                ctype = "Русский фильм"
-            elif item['type'] == "russian-serial":
-                ctype = "Русский сериал"
-            else:
-                ctype = item['type']
-            others.append(
-                {
-                    "id": item['kinopoisk_id'],
-                    "title": item['title'],
-                    "type": ctype,
-                    "date": item['year']
-                }
-            )
-            used_ids.append(item['kinopoisk_id'])
-
-    others = sorted(others, key=lambda x: x['date'], reverse=True)
-    return (items, others)
-
 def stream_search_data(search_query: str, token: str | None, ch: Cache = None):
-    if USE_KODIK_SEARCH:
-        search_res = kodik_parser.search(search_query, limit=50)
-    else:
-        search_res = shiki_parser.search(search_query)
+
+    search_res = shiki_parser.search(search_query)
 
     used_ids = []
     for item in search_res:

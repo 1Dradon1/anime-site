@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, abort, session, send_file, send_from_directory, Response, stream_with_context
+from flask import Flask, render_template, request, redirect, abort, session, send_file, send_from_directory, Response, stream_with_context, g
 from flask_socketio import SocketIO, send, emit, join_room, leave_room
 from flask_mobility import Mobility
 from flask_httpauth import HTTPBasicAuth
