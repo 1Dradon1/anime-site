@@ -24,6 +24,7 @@ elif config.USE_KODIK_SEARCH:
     # и проходит полную валидацию
     kodik_parser = KodikParser(token=config.KODIK_TOKEN, use_lxml=config.USE_LXML, validate_token=True)
 
+
 shiki_parser = ShikimoriParser(use_lxml=config.USE_LXML, mirror=config.SHIKIMORI_MIRROR)
 
 
@@ -119,12 +120,17 @@ def get_serial_info(id: str, id_type: str, token: str) -> dict:
 def get_download_link(id: str, id_type: str, seria_num: int, translation_id: str, token: str):
     return kodik_parser.get_link(id, id_type, seria_num, translation_id)[0]
 
-def stream_search_data(search_query: str, token: str | None, ch: Cache = None):
+def stream_search_data(search_query: str, search_engine: str, token: str | None, ch: Cache = None):
 
-    if USE_KODIK_SEARCH == True:
+    if search_engine == "kdk":
         search_res = kodik_parser.search(search_query)
-    else:
+    elif search_engine == "sh":
         search_res = shiki_parser.search(search_query)
+    else:
+        if USE_KODIK_SEARCH == True:
+            search_res = kodik_parser.search(search_query)
+        else:
+            search_res = shiki_parser.search(search_query)
 
     used_ids = []
     for item in search_res:

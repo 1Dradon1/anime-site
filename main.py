@@ -59,6 +59,9 @@ def index_form():
         return redirect(f"/download/kp/{data['kinopoisk_id'].strip()}/")
     elif data.get('kdk') and data.get('kdk').strip(): # kdk = Kodik
         return redirect(f"/search/kdk/{data['kdk'].strip()}/")
+    elif data.get('query') and data.get('query').strip():
+        engine = session.get('search_engine', 'kdk')
+        return redirect(f"/search/{engine}/{data['query'].strip()}/")
     else:
         return redirect("/")
     
@@ -69,23 +72,45 @@ def change_theme():
         session['is_dark'] = not(session['is_dark'])
     else:
         session['is_dark'] = True
-    return redirect(request.referrer)
+    return redirect(request.referrer or "/")
+
+@app.route("/change_engine/", methods=['POST'])
+def change_engine():
+    data = dict(request.form)
+    engine = data.get('search_engine')
+    if engine in ['kdk', 'sh']:
+        session['search_engine'] = engine
+        
+    referrer = request.referrer
+    if referrer and '/search/' in referrer:
+        try:
+            from urllib.parse import urlparse
+            import urllib.parse
+            path = urlparse(referrer).path
+            parts = path.strip('/').split('/')
+            if len(parts) >= 3 and parts[-3] == 'search':
+                query = urllib.parse.unquote(parts[-1])
+                return redirect(f"/search/{engine}/{urllib.parse.quote(query)}/")
+        except Exception:
+            pass
+            
+    return redirect(referrer or "/")
 
 @app.route('/search/<string:db>/<string:query>/')
 def search_page(db, query):
-    if db == "kdk":
-        return render_template('search.html', query=query, is_dark=session['is_dark'] if "is_dark" in session.keys() else False)
+    if db in ["kdk", "sh"]:
+        return render_template('search.html', query=query, db=db, is_dark=session['is_dark'] if "is_dark" in session.keys() else False)
     else:
         # Другие базы не поддерживаются (возможно в будущем будут)
         return abort(400)
 
 @app.route('/api/search/stream/<string:db>/<string:query>/')
 def search_stream(db, query):
-    if db != "kdk":
+    if db not in ["kdk", "sh"]:
         return abort(400)
     def generate():
         try:
-            for item in stream_search_data(query, token, ch if ch_save or ch_use else None):
+            for item in stream_search_data(query, db, token, ch if ch_save or ch_use else None):
                 yield f"data: {json.dumps(item)}\n\n"
         except Exception as e:
             yield f"data: {json.dumps({'error': str(e)})}\n\n"
