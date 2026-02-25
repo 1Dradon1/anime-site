@@ -52,11 +52,6 @@
         width: 80px;
         text-align: center;
     }
-    #timing_link_div {
-        margin-top: 20px;
-        padding: 20px;
-        text-align: center;
-    }
     #qr_code_container {
         margin: 20px auto 0;
         background: white;
@@ -91,13 +86,13 @@
         <div class="main-controls">
             <div class="button-group">
                 {% if seria > 1 %}
-                <a id="previous_seria_a" href="/watch/{{ serv }}/{{ id }}/{{ data }}/{{ seria-1 }}/{{ quality }}/">
-                    <button class="btn-modern btn-secondary">← Пред. серия</button>
+                <a id="previous_seria_a" href="/watch/{{ serv }}/{{ id }}/{{ data }}/{{ seria-1 }}/{{ quality }}/" class="btn-modern btn-secondary">
+                    ← Пред. серия
                 </a>
                 {% endif %}
                 {% if seria < series %}
-                <a id="next_seria_a" href="/watch/{{ serv }}/{{ id }}/{{ data }}/{{ seria+1 }}/{{ quality }}/">
-                    <button class="btn-modern">След. серия →</button>
+                <a id="next_seria_a" href="/watch/{{ serv }}/{{ id }}/{{ data }}/{{ seria+1 }}/{{ quality }}/" class="btn-modern">
+                    След. серия →
                 </a>
                 {% endif %}
             </div>
@@ -108,11 +103,11 @@
             </div>
             
             <div class="button-group">
-                <a href="/">
-                    <button class="btn-modern">🏠 Главная</button>
+                <a href="/" class="btn-modern">
+                    🏠 Главная
                 </a>
-                <a href="/download/{{ serv }}/{{ id }}/">
-                    <button class="btn-modern btn-secondary">К описанию</button>
+                <a href="/download/{{ serv }}/{{ id }}/" class="btn-modern btn-secondary">
+                    К описанию
                 </a>
             </div>
         </div>
@@ -162,25 +157,14 @@
 </div>
 
 <!-- Скрытые данные для JS -->
-<div style="display: none" id="data-holder">
-    {
-        "cur_ser": {{seria}},
-        "max_ser": {{series}},
-        "cur_quality": "{{quality}}",
-        "timing": {{timing}},
-        "serv": "{{serv}}",
-        "id": "{{id}}",
-        "data": "{{data}}",
-        "seria": "{{seria}}"
-    }
-</div>
+<div style="display: none" id="data-holder">{{ {'cur_ser': seria, 'max_ser': series, 'cur_quality': quality, 'timing': timing, 'serv': serv, 'id': id, 'data': data, 'seria': seria} | tojson }}</div>
 {% endblock %}
 
 {% block scripts %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
     const video = document.getElementById("v-player");
-    const page_data = JSON.parse(document.getElementById('data-holder').innerText);
+    const page_data = JSON.parse(document.getElementById('data-holder').textContent);
     let qrCode;
 
     function closeModal(id) {
@@ -190,7 +174,14 @@
     video.focus();
 
     if (page_data.timing > 0) {
-        video.currentTime = page_data.timing;
+        if (video.readyState >= 1) {
+            video.currentTime = page_data.timing;
+        } else {
+            video.addEventListener('loadedmetadata', function onLoadedMeta() {
+                video.currentTime = page_data.timing;
+                video.removeEventListener('loadedmetadata', onLoadedMeta);
+            });
+        }
     }
     
     function skip_left() {
@@ -198,7 +189,8 @@
     }
     
     function skip_right() {
-        video.currentTime = Math.min(video.currentTime + 80, video.duration);
+        const maxSeek = Number.isFinite(video.duration) ? video.duration : video.currentTime + 80;
+        video.currentTime = Math.min(video.currentTime + 80, maxSeek);
     }
 
     document.addEventListener('keydown', function(event) {
@@ -228,10 +220,13 @@
         }
     });
 
+    const timingModalElement = document.getElementById('timing_modal');
+    timingModalElement.addEventListener('click', (e) => {
+        if (e.target === timingModalElement) closeModal('timing_modal');
+    });
+
     document.getElementById('create_qr_btn').addEventListener("click", function () {
-        const modal = document.getElementById('timing_modal');
         const cur_dur = Math.trunc(video.currentTime);
-        const url = new URL(window.location.origin + window.location.pathname);
         const loc = `${window.location.origin}/watch/${page_data.serv}/${page_data.id}/${page_data.data}/${page_data.seria}/${page_data.cur_quality}/${cur_dur}/`;
         
         document.getElementById('link_container').value = loc;
@@ -249,12 +244,7 @@
             qrCode.makeCode(loc);
         }
         
-        modal.classList.add('active');
-        
-        // Закрытие по клику вне контента
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) closeModal('timing_modal');
-        });
+        timingModalElement.classList.add('active');
     });
 </script>
 {% endblock %}

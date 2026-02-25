@@ -58,7 +58,7 @@
             <a href="https://kodikdb.com/find-player?{{ id_type }}ID={{ id }}&only_season=false" class="nav-link" style="font-size: 0.9rem;">↗ Смотреть в Kodik</a>
         </div>
         <div style="display: flex; gap: 10px;">
-            <a href="/"><button class="btn-modern">🏠 Главная</button></a>
+            <a href="/" class="btn-modern">🏠 Главная</a>
             <button class="btn-modern btn-secondary copy_link">🔗 Ссылка на комнату</button>
             <button class="btn-modern btn-secondary create_qr">📱 QR Код</button>
         </div>
@@ -75,10 +75,10 @@
             <h3 style="margin-bottom: 15px; font-size: 1rem; color: var(--text-muted);">Навигация</h3>
             <div class="control-group">
                 {% if seria > 1 %}
-                <a href="cs-{{ seria-1 }}/"><button class="btn-modern btn-secondary">← Пред. серия</button></a>
+                <a href="cs-{{ seria-1 }}/" class="btn-modern btn-secondary">← Пред. серия</a>
                 {% endif %}
                 {% if seria < series %}
-                <a href="cs-{{ seria+1 }}/"><button class="btn-modern">След. серия →</button></a>
+                <a href="cs-{{ seria+1 }}/" class="btn-modern">След. серия →</a>
                 {% endif %}
             </div>
             
@@ -127,23 +127,23 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js" integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA==" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" integrity="sha512-CNgIRecGo7nphbeZ04Sc13ka07paqdeTu0WR1IM4kNcpmBAUSHSQX0FslNhTDadL4O5SAGapGt4FodqL8My0mA==" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.8.1/socket.io.js" integrity="sha512-8BHxHDLsOHx+flIrQ0DrZcea7MkHqRU5GbTHmbdzMRnAaoCIkZ97PqZcXJkKZckMMhqfoeaJE+DNUVuyoQsO3Q==" crossorigin="anonymous"></script>
 <script src="{{ url_for('static', filename='js/room_funcs.js') }}"></script>
 <script>
     function closeModal(id) {
         document.getElementById(id).classList.remove('active');
     }
 
+    const qrModal = document.getElementById('qr_modal');
     // Показ контейнера QR кода
     document.querySelector('.create_qr').addEventListener('click', () => {
-        const modal = document.getElementById('qr_modal');
-        modal.classList.add('active');
-        
-        // Закрытие по клику вне контента
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) closeModal('qr_modal');
-        });
+        qrModal.classList.add('active');
+    });
+
+    // Закрытие по клику вне контента
+    qrModal.addEventListener('click', (e) => {
+        if (e.target === qrModal) closeModal('qr_modal');
     });
 </script>
 {% endblock %}

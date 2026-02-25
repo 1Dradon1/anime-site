@@ -3,15 +3,13 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Адрес для доступа
-HOST = os.getenv("HOST") # Такой адрес позволяет получить доступ как через 127.0.0.1, так и через локальный адрес компьютера (позволяет получить доступ к серверу с других устройств в сети)
-PORT = os.getenv("PORT")
+HOST = os.getenv("HOST", "0.0.0.0") # Такой адрес позволяет получить доступ как через 127.0.0.1, так и через локальный адрес компьютера (позволяет получить доступ к серверу с других устройств в сети)
+PORT = int(os.getenv("PORT", 5555))
 KODIK_TOKEN = os.getenv("KODIK_TOKEN")
-APP_SECRET_KEY = os.getenv("APP_SECRET_KEY")
+APP_SECRET_KEY = os.getenv("APP_SECRET_KEY", "some_super_secret_key")
 DEBUG = os.getenv("DEBUG") # Debug от Flask
 SHIKIMORI_MIRROR = os.getenv("SHIKIMORI_MIRROR") # Домен зеркало для shikimori. None = параметр из парсера по умолчанию
 USE_KODIK_SEARCH = os.getenv("USE_KODIK_SEARCH")
-
-
 SAVE_DATA = True # Для сохранения результатов парсинга (картинки, названия, ссылки на видео)
 USE_SAVED_DATA = True # Для использования уже сохранённых результатов
 SAVED_DATA_FILE = "cache.json" # Файл с сохранёнными данными (если SAVE_DATA == False и USE_SAVED_DATA == False, файл не обязателен)

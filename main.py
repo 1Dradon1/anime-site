@@ -1,10 +1,11 @@
-from flask import Flask, render_template, request, redirect, abort, session, send_file, send_from_directory
+from flask import Flask, render_template, request, redirect, abort, session, send_file, send_from_directory, Response, stream_with_context, g
 from flask_socketio import SocketIO, send, emit, join_room, leave_room
 from flask_mobility import Mobility
 from flask_httpauth import HTTPBasicAuth
 from getters import *
 from fast_download import clear_tmp, fast_download, get_path
 import watch_together
+import json
 from json import load
 import config
 import os
@@ -52,14 +53,14 @@ def index():
 @app.route('/', methods=['POST'])
 def index_form():
     data = dict(request.form)
-    if 'shikimori_id' in data.keys():
-        return redirect(f"/download/sh/{data['shikimori_id']}/")
-    if 'kinopoisk_id' in data.keys():
-        return redirect(f"/download/kp/{data['kinopoisk_id']}/")
-    elif 'kdk' in data.keys(): # kdk = Kodik
-        return redirect(f"/search/kdk/{data['kdk']}/")
+    if data.get('shikimori_id') and data.get('shikimori_id').strip():
+        return redirect(f"/download/sh/{data['shikimori_id'].strip()}/")
+    elif data.get('kinopoisk_id') and data.get('kinopoisk_id').strip():
+        return redirect(f"/download/kp/{data['kinopoisk_id'].strip()}/")
+    elif data.get('kdk') and data.get('kdk').strip(): # kdk = Kodik
+        return redirect(f"/search/kdk/{data['kdk'].strip()}/")
     else:
-        return abort(400)
+        return redirect("/")
     
 @app.route("/change_theme/", methods=['POST'])
 def change_theme():
@@ -73,18 +74,38 @@ def change_theme():
 @app.route('/search/<string:db>/<string:query>/')
 def search_page(db, query):
     if db == "kdk":
-        try:
-            # Попытка получить данные с кодика
-            s_data = get_search_data(query, token, ch if ch_save or ch_use else None)
-            return render_template('search.html', items=s_data[0], others=s_data[1], is_dark=session['is_dark'] if "is_dark" in session.keys() else False)
-        except:
-            return render_template('search.html', is_dark=session['is_dark'] if "is_dark" in session.keys() else False)
+        return render_template('search.html', query=query, is_dark=session['is_dark'] if "is_dark" in session.keys() else False)
     else:
         # Другие базы не поддерживаются (возможно в будущем будут)
         return abort(400)
 
+@app.route('/api/search/stream/<string:db>/<string:query>/')
+def search_stream(db, query):
+    if db != "kdk":
+        return abort(400)
+    def generate():
+        try:
+            for item in stream_search_data(query, token, ch if ch_save or ch_use else None):
+                yield f"data: {json.dumps(item)}\n\n"
+        except Exception as e:
+            yield f"data: {json.dumps({'error': str(e)})}\n\n"
+        yield "event: close\ndata: close\n\n"
+    return Response(stream_with_context(generate()), mimetype='text/event-stream')
+
 @app.route('/download/<string:serv>/<string:id>/')
 def download_shiki_choose_translation(serv, id):
+    """
+    Render info page with available translations and metadata for a Shikimori or Kinopoisk item.
+    
+    Parameters:
+        serv (str): Service identifier — "sh" for Shikimori or "kp" for Kinopoisk.
+        id (str): Item identifier for the requested title.
+    
+    Returns:
+        A rendered info.html response populated with translations, series count and metadata for the requested item.
+        If the external data fetch fails, returns a simple HTML error message indicating no data.
+        If `serv` is not "sh" or "kp", aborts with HTTP 400.
+    """
     cache_wasnt_used = False
     if serv == "sh":
         if ch_use and ch.is_id("sh"+id) and ch.get_data_by_id("sh"+id)['serial_data'] != {}:
@@ -94,10 +115,7 @@ def download_shiki_choose_translation(serv, id):
                 # Получаем данные о наличии переводов от кодика
                 serial_data = get_serial_info(id, "shikimori", token)
             except Exception as ex:
-                return f"""
-                <h1>По данному запросу нет данных</h1>
-                {f'<p>Exception type: {ex}</p>' if config.DEBUG else ''}
-                """
+                serial_data = {'translations': [], 'top_translations': [], 'etc_translations': [], 'series_count': 0, 'error': True, 'debug_msg': str(ex) if config.DEBUG else None}
         cache_used = False
         if ch_use and ch.is_id("sh"+id):
             # Проверка кеша на наличие данных
@@ -166,6 +184,7 @@ def download_shiki_choose_translation(serv, id):
             series_count=serial_data["series_count"], id=id,
             dtype=dtype, date=date, status=status, rating=rating, related=related,
             description=description, is_shiki=True, cache_wasnt_used=cache_wasnt_used, serv=serv,
+            error=serial_data.get('error', False), debug_msg=serial_data.get('debug_msg', None),
             is_dark=session['is_dark'] if "is_dark" in session.keys() else False, is_mobile=g.is_mobile,
             shiki_mirror=config.SHIKIMORI_MIRROR if config.SHIKIMORI_MIRROR else "shikimori.one")
     elif serv == "kp":
@@ -173,13 +192,11 @@ def download_shiki_choose_translation(serv, id):
             # Получаем данные о наличии переводов от кодика
             serial_data = get_serial_info(id, "kinopoisk", token)
         except Exception as ex:
-            return f"""
-            <h1>По данному запросу нет данных</h1>
-            {f'<p>Exception type: {ex}</p>' if config.DEBUG else ''}
-            """
+            serial_data = {'translations': [], 'series_count': 0, 'error': True, 'debug_msg': str(ex) if config.DEBUG else None}
         return render_template('info.html', 
             title="...", image=config.IMAGE_NOT_FOUND, score="...", translations=serial_data['translations'], series_count=serial_data["series_count"], id=id, 
             dtype="...", date="...", status="...", description='...', is_shiki=False, serv=serv,
+            error=serial_data.get('error', False), debug_msg=serial_data.get('debug_msg', None),
             is_dark=session['is_dark'] if "is_dark" in session.keys() else False)
     else:
         return abort(400)
@@ -438,6 +455,20 @@ def change_room_quality(rid, quality):
 @app.route('/fast_download_act/<string:id_type>-<string:id>-<int:seria_num>-<string:translation_id>-<string:quality>/')
 @app.route('/fast_download_act/<string:id_type>-<string:id>-<int:seria_num>-<string:translation_id>-<string:quality>-<int:max_series>/')
 def fast_download_work(id_type: str, id: str, seria_num: int, translation_id: str, quality: str, max_series: int = 12):
+    """
+    Generate a fast-download package for a specific title/episode and return it as a downloadable file response.
+    
+    Parameters:
+        id_type (str): Server identifier type (e.g., "sh" or "kp").
+        id (str): Resource identifier for the title.
+        seria_num (int): Episode number (use 0 for whole-title or non-episodic downloads).
+        translation_id (str): Translation/track identifier used to label the file and metadata.
+        quality (str): Desired video quality label (e.g., "720", "1080").
+        max_series (int): Maximum number of series digits to use when zero-padding episode numbers (default 12).
+    
+    Returns:
+        A Flask response that sends the generated file as an attachment, or an HTTP error response when generation fails.
+    """
     translation = translations[translation_id] if translation_id in translations else "Неизвестно"
     add_zeros = len(str(max_series))
     if config.USE_SAVED_DATA and ch.is_id('sh'+id):
@@ -476,7 +507,7 @@ def fast_download_work(id_type: str, id: str, seria_num: int, translation_id: st
                 ch.add_seria("kp"+id, translation_id, seria_num, link)
             except KeyError:
                 pass
-        return send_file(get_path(hsh), as_attachment=True)
+        return send_file(get_path(hsh), as_attachment=True, download_name=fname + '.mp4')
     except ModuleNotFoundError:
         return abort(500, 'Внимание, на сервере не установлен ffmpeg или программа не может получить к нему доступ. Ffmpeg обязателен для использования быстрой загрузки. (Стандартная загрузка работает без ffmpeg)')
     except FileNotFoundError:
@@ -513,10 +544,25 @@ def broadcast(data):
 @app.route('/help/')
 def help():
     # Заглушка
+    """
+    Redirects the client to the project's README on GitHub.
+    
+    Returns:
+        A Flask redirect response that points the client to the repository README URL.
+    """
     return redirect("https://github.com/1Dradon1/anime-site/blob/main/README.MD")
 
 @app.route('/resources/<string:path>')
 def resources(path: str):
+    """
+    Serve a file from the application's resources directory if it exists; abort with 404 otherwise.
+    
+    Parameters:
+        path (str): Relative path to the resource file within the resources directory. Both Windows-style (backslash) and Unix-style (forward slash) paths are supported.
+    
+    Returns:
+        A Flask response sending the requested file when found; aborts with a 404 error if the file does not exist.
+    """
     if os.path.exists(f'resources\\{path}'): # Windows-like
         return send_file(f'resources\\{path}')
     elif os.path.exists(f'resources/{path}'): # Unix
@@ -530,16 +576,34 @@ def get_episode(shikimori_id: str, seria_num: int, translation_id: str):
 
 @app.route('/guide')
 def guide():
+    """
+    Render the guide page using the current theme preference.
+    
+    Returns:
+        Response: Rendered HTML for 'guide.html' with `is_dark` set to the session's 'is_dark' value or False if missing.
+    """
     return render_template('guide.html', is_dark=session.get('is_dark', False))
 
-@app.route('/download')
-def download_file():
-    # Отправка файла клиенту
-    return send_from_directory("./static/", 'dgnmpv.zip', as_attachment=True)
+@app.route('/download/<string:version>')
+def download_file(version: str):
+    if version == 'low':
+        return send_from_directory("./static/", 'dgnmpv-low-end.zip', as_attachment=True, download_name='dgnmpv-low-end.zip')
+    elif version == 'high':
+        return send_from_directory("./static/", 'dgnmpv.zip', as_attachment=True, download_name='dgnmpv.zip')
 
 @app.route('/favicon.ico')
 def favicon():
     return send_file(config.FAVICON_PATH)
+
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html', is_dark=session.get('is_dark', False)), 404
+
+@app.errorhandler(500)
+def internal_server_error(e):
+    import traceback
+    debug_msg = traceback.format_exc() if config.DEBUG else None
+    return render_template('error.html', is_dark=session.get('is_dark', False), debug_msg=debug_msg), 500
 
 if __name__ == "__main__":
     socketio.run(app, host=config.HOST, port=config.PORT, debug=config.DEBUG, allow_unsafe_werkzeug=True)
