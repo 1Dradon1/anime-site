@@ -17,7 +17,7 @@
 
     <!-- Индикатор загрузки -->
     <div id="loading-indicator" style="text-align: center; margin-bottom: 30px;">
-        <div style="font-size: 2.5rem; display: inline-block; animation: spin 1s linear infinite;">⏳</div>
+        <div class="theme-spinner"></div>
         <p style="color: var(--text-muted); margin-top: 15px; font-weight: 500;">Ищем аниме...</p>
     </div>
 
@@ -47,6 +47,17 @@
         border-color: var(--primary-color);
         box-shadow: 0 10px 30px rgba(0,0,0,0.4);
     }
+    
+    .theme-spinner {
+        display: inline-block;
+        width: 50px;
+        height: 50px;
+        border: 4px solid var(--surface-light); /* Светло-серый/темно-серый фон в зависимости от темы */
+        border-top: 4px solid var(--primary-color);     /* Фиолетовый акцент */
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+    
     @keyframes spin {
         0% { transform: rotate(0deg); }
         100% { transform: rotate(360deg); }
