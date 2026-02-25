@@ -1,8 +1,7 @@
 <div align="center">
-  <a id="top"></a>
-  <img src="resources/favicon.ico" alt="Logo" width="80" height="80">
+  <img src="resources/A.ico" alt="Logo" width="80" height="80">
 
-  <h1 align="center">Kodik-Download-Watch</h1>
+  <h1 align="center">anime-site</h1>
 
   <p align="center">
     Небольшое Flask приложение для скачивания и просмотра аниме/дорам из базы Kodik.
@@ -25,14 +24,11 @@
   </p>
 </div>
 
-> [!WARNING]
-> ПОЧТИ ПОЛНОСТЬЮ ЛОМАЕТ ОРИГИНАЛЬНОЕ ПРИЛОЖЕНИЕ!
-
 ---
 
 ## Описание
 
-**Kodik-Download-Watch** — это легкое веб-приложение на Flask, предназначенное для удобного поиска, просмотра и скачивания контента из базы Kodik. Главная особенность — возможность создавать комнаты для совместного просмотра с друзьями в реальном времени.
+**anime-site** — это легкое веб-приложение на Flask, предназначенное для удобного поиска, просмотра и скачивания контента из базы Kodik. Главная особенность — возможность создавать комнаты для совместного просмотра с друзьями в реальном времени.
 
 ### Основные возможности
 * **Поиск:** Гибкий поиск по базе Kodik, а также через ID Shikimori и Кинопоиск.
@@ -57,16 +53,18 @@
    cd anime-site
    ```
 
-2. **Создайте виртуальное окружение:**
+2. **Создайте виртуальное окружение и файл для кэша:**
    * **Windows:**
      ```bash
      python -m venv venv
      venv\Scripts\activate
+     echo {} > cache.json
      ```
    * **Linux:**
      ```bash
      python3 -m venv venv
      source venv/bin/activate
+     echo {} > cache.json
      ```
 
 3. **Установите зависимости:**
@@ -78,7 +76,7 @@
    ```bash
    python main.py
    ```
-   Перейдите по адресу `http://127.0.0.1:5000` в вашем браузере.
+   Перейдите по адресу `http://127.0.0.1:5555` в вашем браузере.
 
 ---
 
@@ -157,5 +155,12 @@
 ## Лицензия
 
 Распространяется под лицензией MIT. Подробности в файле [LICENSE](LICENSE).
+
+## Thanks
+
+- [YaNesyTortiK](https://github.com/YaNesyTortiK/) - [Kodik-Download-Watch](https://github.com/YaNesyTortiK/Kodik-Download-Watch)
+- [bloc97](https://github.com/bloc97/) - [Anime4k](https://github.com/bloc97/Anime4K)<br>
+also
+- [D4mnedLure](https://github.com/D4mnedLure/) - for fixing bugs and huge UI improvements
 
 <p align="right">(<a href="#top">наверх</a>)</p>

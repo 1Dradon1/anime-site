@@ -1,30 +1,41 @@
-let episodeButtons = document.getElementsByClassName("episode-number");
-let autoMpvToggle = document.getElementById("auto_mpv_toggle");
-let shikimori_id = episodeButtons.length > 0 ? episodeButtons[0].getAttribute("data-shikimori-id") : null;
+let episodeButtons = document.getElementsByClassName("episode-number")
+let autoMpvToggle = document.getElementById("auto_mpv_toggle")
+let shikimori_id = episodeButtons.length > 0 ? episodeButtons[0].getAttribute("data-shikimori-id") : null
 
 // Инициализация тумблера
 if (autoMpvToggle) {
-    const isAuto = localStorage.getItem("autoMPV") === "true";
-    autoMpvToggle.checked = isAuto;
+    const isAuto = localStorage.getItem("autoMPV") === "true"
+    autoMpvToggle.checked = isAuto
     autoMpvToggle.addEventListener("change", (e) => {
-        localStorage.setItem("autoMPV", e.target.checked);
-    });
+        localStorage.setItem("autoMPV", e.target.checked)
+    })
 }
+
 
 // Слушатель для кнопок серий
 for (let item of episodeButtons) {
     item.addEventListener("click", (e) => {
-        const isAuto = localStorage.getItem("autoMPV") === "true";
-        if (isAuto) {
-            fetchAndOpenMPV(e);
-        } else {
-            window.location.href = item.getAttribute("data-web-url");
+        const isAuto = localStorage.getItem("autoMPV") === "true"
+        if (isAuto){
+            update_recently_watched_list(shikimori_id)
+            fetchAndOpenMPV(e)
         }
-    });
+        else {
+            update_recently_watched_list(shikimori_id)
+            open_web_player(e, item)
+        }
+    })
 }
 
-if (shikimori_id) {
-    load_last_watched(shikimori_id);
+if (shikimori_id)
+    load_last_watched(shikimori_id)
+
+function open_web_player(event, item){
+    const episode_btn = event.currentTarget
+    console.log(episode_btn.value)
+    const translation_id = episode_btn.getAttribute("data-translation-id")
+    save_last_watched(shikimori_id, episode_btn.value, translation_id)
+    window.location.href = item.getAttribute("data-web-url")
 }
 
 /**
@@ -35,21 +46,21 @@ if (shikimori_id) {
  * @param {Event} event - Click event whose `currentTarget` is the episode button element (must have `data-shikimori-id`, `data-translation-id`, and `value`).
  */
 async function fetchAndOpenMPV(event) {
-    const episode = event.currentTarget;
-    const notification = document.getElementById("copy-notification");
+    const episode = event.currentTarget
+    const notification = document.getElementById("copy-notification")
     
     try {
-        if (notification) showNotification(notification, "Запрашиваем ссылку...", 5000);
+        if (notification) showNotification(notification, "Запрашиваем ссылку...", 5000)
         
-        const shikimori_id = episode.getAttribute("data-shikimori-id");
-        const translation_id = episode.getAttribute("data-translation-id");
-        const ep_value = episode.value;
+        const shikimori_id = episode.getAttribute("data-shikimori-id")
+        const translation_id = episode.getAttribute("data-translation-id")
+        const ep_value = episode.value
 
-        const response = await fetch(`/get_episode/${shikimori_id}/${ep_value}/${translation_id}`);
+        const response = await fetch(`/get_episode/${shikimori_id}/${ep_value}/${translation_id}`)
 
-        if (!response.ok) {
-            throw new Error(`Ошибка: ${response.status}`);
-        }
+        if (!response.ok) 
+            throw new Error(`Ошибка: ${response.status}`)
+        
 
         const text = await response.text();
         save_last_watched(shikimori_id, ep_value, translation_id);
@@ -57,8 +68,8 @@ async function fetchAndOpenMPV(event) {
         
         if (notification) showNotification(notification, "Открываю MPV!", 2000);
     } catch (err) {
-        console.error('Ошибка:', err);
-        if (notification) showNotification(notification, "Ошибка открытия :(", 3000);
+        console.error('Ошибка:', err)
+        if (notification) showNotification(notification, "Ошибка открытия :(", 3000)
     }
 }
 
@@ -69,10 +80,10 @@ async function fetchAndOpenMPV(event) {
  * @param {number} duration - Time in milliseconds before the notification is hidden.
  */
 function showNotification(el, text, duration) {
-    el.querySelector(".alert").textContent = text;
-    el.classList.add("visible");
-    if (el.timeout) clearTimeout(el.timeout);
-    el.timeout = setTimeout(() => el.classList.remove("visible"), duration);
+    el.querySelector(".alert").textContent = text
+    el.classList.add("visible")
+    if (el.timeout) clearTimeout(el.timeout)
+    el.timeout = setTimeout(() => el.classList.remove("visible"), duration)
 }
 
 /**
@@ -84,10 +95,24 @@ function showNotification(el, text, duration) {
  * @param {string|number} translation_id - The translation/voiceover identifier.
  */
 function save_last_watched(shikimori_id, episode, translation_id) {
-    const data = JSON.parse(localStorage.getItem("lastEpisodes") || "{}");
-    data[shikimori_id] = [episode, translation_id];
-    localStorage.setItem("lastEpisodes", JSON.stringify(data));
-    highlight_last_watched(shikimori_id, episode, translation_id);
+    const data = JSON.parse(localStorage.getItem("lastEpisodes") || "{}")
+    data[shikimori_id] = [episode, translation_id]
+    localStorage.setItem("lastEpisodes", JSON.stringify(data))
+    highlight_last_watched(shikimori_id, episode, translation_id)
+}
+
+function update_recently_watched_list(shikimori_id){
+    let imglink = document.getElementsByClassName("img-link")[0].getAttribute("src")
+    let name = document.getElementsByClassName("anime-title")[0].innerHTML
+    let data = JSON.parse(localStorage.getItem("recentlyWatched") || "[]");
+
+    data = data.filter(el => el.id !== shikimori_id);
+    data.unshift({"id": shikimori_id, "name": name, "img-link": imglink})
+
+    if (data.length >= 5)
+        data.pop()
+
+    localStorage.setItem("recentlyWatched", JSON.stringify(data))
 }
 
 /**
@@ -99,9 +124,9 @@ function save_last_watched(shikimori_id, episode, translation_id) {
 function highlight_last_watched(shikimoriId, episode, translationId) {
     for (let btn of episodeButtons) {
         if (btn.getAttribute("data-translation-id") === translationId && btn.value === episode) {
-            btn.classList.add("last-watched");
+            btn.classList.add("last-watched")
         } else {
-            btn.classList.remove("last-watched");
+            btn.classList.remove("last-watched")
         }
     }
 }
@@ -111,8 +136,8 @@ function highlight_last_watched(shikimoriId, episode, translationId) {
  * @param {string|number} shikimori_id - The Shikimori item identifier used as the key in stored last-episodes data.
  */
 function load_last_watched(shikimori_id) {
-    const data = JSON.parse(localStorage.getItem("lastEpisodes") || "{}");
+    const data = JSON.parse(localStorage.getItem("lastEpisodes") || "{}")
     if (data[shikimori_id]) {
-        highlight_last_watched(shikimori_id, data[shikimori_id][0], data[shikimori_id][1]);
+        highlight_last_watched(shikimori_id, data[shikimori_id][0], data[shikimori_id][1])
     }
 }

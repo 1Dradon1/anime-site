@@ -117,7 +117,7 @@
 {% block content %}
 <div class="info-header fade-in">
     <div class="poster-container">
-        <img class="imglink" src="{{ image }}" alt="{{ title }}" loading="lazy">
+        <img class="img-link" src="{{ image }}" alt="{{ title }}" loading="lazy">
     </div>
     <div class="info-content">
         <h1 class="anime-title" style="font-size: 2.5rem; margin-bottom: 20px;">{{ title }}</h1>
@@ -128,7 +128,7 @@
             <span class="label">Оценка:</span> <span style="color: var(--accent-color); font-weight: 700;">{{ score }}</span>
             <span class="label">Рейтинг:</span> <span>{{ rating }}</span>
             {% if is_shiki %}
-            <span class="label">Источник:</span> <a href="https://shikimori.one/animes/{{ id }}" target="_blank">Shikimori →</a>
+            <span class="label">Источник:</span> <a href="https://{{ shiki_mirror }}/animes/{{ id }}" target="_blank">Shikimori →</a>
             {% endif %}
         </div>
         
