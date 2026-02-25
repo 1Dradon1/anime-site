@@ -11,6 +11,8 @@ logging.basicConfig(level=logging.DEBUG)
 if config.USE_LXML:
     import lxml
 
+USE_KODIK_SEARCH = False
+
 if not config.KODIK_TOKEN:
     try:
         kodik_parser = KodikParser(use_lxml=config.USE_LXML, validate_token=True)

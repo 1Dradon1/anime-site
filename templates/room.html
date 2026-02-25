@@ -84,7 +84,6 @@
             
             {% if seria > 0 %}
             <form method="POST" style="margin-top: 20px;">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <div style="display: flex; gap: 10px;">
                     <input id="choose_seria_num" name="seria" placeholder="№ серии" required class="search-input-modern" style="width: 120px; padding: 8px 15px;">
                     <button type="submit" class="btn-modern" style="padding: 8px 20px;">Перейти</button>
