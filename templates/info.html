@@ -177,6 +177,30 @@
     </div>
     
     <div class="glass-card" style="padding: 10px;">
+        {% if error %}
+        <!-- Вывод красивой ошибки если нет данных -->
+        <div style="padding: 40px 20px; text-align: center;">
+            <div style="font-size: 3rem; margin-bottom: 15px; display: inline-block; animation: pop 0.5s ease-out forwards;">Oops!</div>
+            <h3 style="margin-bottom: 15px; font-weight: 600;">Переводов <span style="color: var(--primary-color);">нет данных</span></h3>
+            <p style="color: var(--text-muted); font-size: 1.05rem; line-height: 1.5; margin-bottom: 0;">
+                К сожалению, мы не смогли найти видеофайлы или переводы для этого аниме в нашей базе. <br>Возможно, оно ещё не вышло или заблокировано правообладателем.
+            </p>
+
+            {% if debug_msg %}
+            <div style="text-align: left; padding: 15px; background: rgba(0,0,0,0.2); border-radius: var(--radius-sm); border: 1px solid var(--surface-glass-border); overflow-x: auto; margin-top: 20px;">
+                <p style="color: #ff6b6b; font-family: monospace; font-size: 0.9rem; margin: 0;">Exception Info (Debug):</p>
+                <p style="color: var(--text-muted); font-family: monospace; font-size: 0.85rem; margin-top: 5px;">{{ debug_msg }}</p>
+            </div>
+            {% endif %}
+        </div>
+        <style>
+            @keyframes pop {
+                0% { transform: scale(0.8); opacity: 0; }
+                70% { transform: scale(1.1); }
+                100% { transform: scale(1); opacity: 1; }
+            }
+        </style>
+        {% else %}
         {% for translation in top_translations %}
         <div class="translation-row" style="border-bottom: 1px solid var(--surface-glass-border);">
             <div class="translation-name">
@@ -231,6 +255,7 @@
                 {% endfor %}
             </div>
         </details>
+        {% endif %}
         {% endif %}
     </div>
 </section>

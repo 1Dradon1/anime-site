@@ -115,7 +115,7 @@ def download_shiki_choose_translation(serv, id):
                 # Получаем данные о наличии переводов от кодика
                 serial_data = get_serial_info(id, "shikimori", token)
             except Exception as ex:
-                return render_template('error.html', debug_msg=str(ex) if config.DEBUG else None, is_dark=session['is_dark'] if "is_dark" in session.keys() else False), 404
+                serial_data = {'translations': [], 'top_translations': [], 'etc_translations': [], 'series_count': 0, 'error': True, 'debug_msg': str(ex) if config.DEBUG else None}
         cache_used = False
         if ch_use and ch.is_id("sh"+id):
             # Проверка кеша на наличие данных
@@ -184,6 +184,7 @@ def download_shiki_choose_translation(serv, id):
             series_count=serial_data["series_count"], id=id,
             dtype=dtype, date=date, status=status, rating=rating, related=related,
             description=description, is_shiki=True, cache_wasnt_used=cache_wasnt_used, serv=serv,
+            error=serial_data.get('error', False), debug_msg=serial_data.get('debug_msg', None),
             is_dark=session['is_dark'] if "is_dark" in session.keys() else False, is_mobile=g.is_mobile,
             shiki_mirror=config.SHIKIMORI_MIRROR if config.SHIKIMORI_MIRROR else "shikimori.one")
     elif serv == "kp":
@@ -191,10 +192,11 @@ def download_shiki_choose_translation(serv, id):
             # Получаем данные о наличии переводов от кодика
             serial_data = get_serial_info(id, "kinopoisk", token)
         except Exception as ex:
-            return render_template('error.html', debug_msg=str(ex) if config.DEBUG else None, is_dark=session['is_dark'] if "is_dark" in session.keys() else False), 404
+            serial_data = {'translations': [], 'series_count': 0, 'error': True, 'debug_msg': str(ex) if config.DEBUG else None}
         return render_template('info.html', 
             title="...", image=config.IMAGE_NOT_FOUND, score="...", translations=serial_data['translations'], series_count=serial_data["series_count"], id=id, 
             dtype="...", date="...", status="...", description='...', is_shiki=False, serv=serv,
+            error=serial_data.get('error', False), debug_msg=serial_data.get('debug_msg', None),
             is_dark=session['is_dark'] if "is_dark" in session.keys() else False)
     else:
         return abort(400)
