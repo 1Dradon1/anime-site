@@ -599,6 +599,16 @@ def download_file():
 def favicon():
     return send_file(config.FAVICON_PATH)
 
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html', is_dark=session.get('is_dark', False)), 404
+
+@app.errorhandler(500)
+def internal_server_error(e):
+    import traceback
+    debug_msg = traceback.format_exc() if config.DEBUG else None
+    return render_template('error.html', is_dark=session.get('is_dark', False), debug_msg=debug_msg), 500
+
 if __name__ == "__main__":
     socketio.run(app, host=config.HOST, port=config.PORT, debug=config.DEBUG, allow_unsafe_werkzeug=True)
     

@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Ошибка сервера{% endblock %}
+
+{% block content %}
+<div class="error-container" style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 60vh; text-align: center;">
+    <div class="error-card glass-morphism" style="padding: 4rem; border-radius: 24px; background: var(--surface-glass); border: 1px solid var(--surface-glass-border); backdrop-filter: blur(12px); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37); transition: transform 0.3s ease; animation: slideUp 0.6s ease-out;">
+        <h1 style="font-size: 8rem; margin: 0; background: linear-gradient(135deg, #ef4444 0%, #f97316 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; font-weight: 800; line-height: 1;">Ошибка</h1>
+        <h2 style="font-size: 2rem; margin: 1rem 0; color: var(--text-main);">Произошел сбой в системе</h2>
+        <p style="color: var(--text-muted); margin-bottom: 2.5rem; max-width: 400px; font-size: 1.1rem;">
+            Что-то пошло не так на нашей стороне. Попробуйте обновить страницу или вернуться позже.
+            {% if debug_msg and config.DEBUG %}
+            <br><br>
+            <code style="display: block; padding: 10px; background: rgba(0,0,0,0.1); border-radius: 8px; font-size: 0.8rem; text-align: left; overflow-x: auto;">
+                {{ debug_msg }}
+            </code>
+            {% endif %}
+        </p>
+        <a href="{{ url_for('index') }}" class="btn-modern" style="padding: 1rem 2.5rem; font-size: 1.1rem; text-decoration: none; display: inline-block;">
+            На главную страницу
+        </a>
+    </div>
+</div>
+
+<style>
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.error-card:hover {
+    transform: translateY(-5px);
+}
+</style>
+{% endblock %}
