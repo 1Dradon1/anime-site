@@ -53,14 +53,14 @@ def index():
 @app.route('/', methods=['POST'])
 def index_form():
     data = dict(request.form)
-    if data.get('shikimori_id'):
+    if data.get('shikimori_id') and data.get('shikimori_id').strip():
         return redirect(f"/download/sh/{data['shikimori_id'].strip()}/")
-    elif data.get('kinopoisk_id'):
+    elif data.get('kinopoisk_id') and data.get('kinopoisk_id').strip():
         return redirect(f"/download/kp/{data['kinopoisk_id'].strip()}/")
-    elif data.get('kdk'): # kdk = Kodik
+    elif data.get('kdk') and data.get('kdk').strip(): # kdk = Kodik
         return redirect(f"/search/kdk/{data['kdk'].strip()}/")
     else:
-        return abort(400)
+        return redirect("/")
     
 @app.route("/change_theme/", methods=['POST'])
 def change_theme():
