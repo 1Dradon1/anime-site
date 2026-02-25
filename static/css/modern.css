@@ -1,23 +1,23 @@
 :root {
-    --bg-color: rgba(9, 9, 11, 1);
-    --surface-glass: rgba(19, 19, 21, 0.6);
-    --surface-glass-border: rgba(48, 48, 53, 0.3);
-    --primary-color: rgba(139, 92, 246, 1);
-    --primary-glow: rgba(139, 92, 246, 0.4);
-    --accent-color: rgba(0, 213, 255, 1);
-    --text-main: rgba(240, 242, 244, 1);
-    --text-muted: rgba(160, 168, 178, 1);
+    --bg-color: hsl(240, 10%, 4%);
+    --surface-glass: hsla(240, 5%, 8%, 0.6);
+    --surface-glass-border: hsla(240, 5%, 20%, 0.3);
+    --primary-color: hsl(264, 82%, 60%);
+    --primary-glow: hsla(264, 82%, 60%, 0.4);
+    --accent-color: hsl(190, 100%, 50%);
+    --text-main: hsl(210, 15%, 95%);
+    --text-muted: hsl(210, 10%, 70%);
     --glass-blur: blur(12px);
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .theme-light {
-    --bg-color: rgba(248, 249, 250, 1);
-    --surface-glass: rgba(220, 226, 230, 0.7);
-    --surface-glass-border: rgba(168, 178, 188, 0.3);
-    --text-main: rgba(23, 23, 28, 1);
-    --text-muted: rgba(97, 97, 107, 1);
-    --primary-glow: rgba(139, 92, 246, 0.2);
+    --bg-color: hsl(210, 20%, 98%);
+    --surface-glass: hsla(210, 20%, 90%, 0.7);
+    --surface-glass-border: hsla(210, 20%, 70%, 0.3);
+    --text-main: hsl(240, 10%, 10%);
+    --text-muted: hsl(240, 5%, 40%);
+    --primary-glow: hsla(264, 82%, 60%, 0.2);
 }
 
 * {
@@ -235,3 +235,217 @@ input:checked + .slider-modern:before {
 .lead-text { max-width: 700px; margin: 0 auto; font-size: 1.1rem; }
 .btn-full { width: 100%; }
 .small-meta { font-size: 0.8rem; color: var(--text-muted); margin-top: 15px; text-align: center; }
+
+/* Advanced Search Accordion */
+.advanced-search-toggle {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin: 0 auto;
+    padding: 8px 16px;
+    transition: var(--transition-smooth);
+    border-radius: 8px;
+}
+
+.advanced-search-toggle:hover {
+    color: var(--primary-color);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.advanced-search-toggle svg {
+    transition: transform 0.3s ease;
+}
+
+.advanced-search-toggle.open svg {
+    transform: rotate(180deg);
+}
+
+.advanced-search-container {
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-height 0.4s ease, opacity 0.4s ease, padding 0.4s ease;
+}
+
+.advanced-search-container.open {
+    max-height: 300px;
+    padding-top: 25px;
+    opacity: 1;
+}
+
+/* Segmented Engine Toggle */
+.engine-toggle-container {
+    display: flex;
+    position: relative;
+    background: var(--surface-glass);
+    border: 1px solid var(--surface-glass-border);
+    border-radius: 12px;
+    padding: 4px;
+    margin-bottom: 15px;
+    width: fit-content;
+}
+
+.engine-toggle-container input[type="radio"] {
+    display: none;
+}
+
+.engine-toggle-label {
+    position: relative;
+    z-index: 2;
+    padding: 8px 24px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: var(--transition-smooth);
+    border-radius: 8px;
+    user-select: none;
+    text-align: center;
+    min-width: 120px;
+}
+
+.engine-toggle-container input[type="radio"]:checked + .engine-toggle-label {
+    color: white;
+}
+
+.engine-toggle-slider {
+    position: absolute;
+    top: 4px;
+    bottom: 4px;
+    left: 4px;
+    width: calc(50% - 4px);
+    background: var(--primary-color);
+    border-radius: 8px;
+    transition: var(--transition-smooth);
+    z-index: 1;
+    box-shadow: 0 2px 10px var(--primary-glow);
+}
+
+#menu-engine-shiki:checked ~ .engine-toggle-slider,
+#engine-shiki:checked ~ .engine-toggle-slider {
+    transform: translateX(100%);
+}
+
+/* Settings Dropdown */
+.settings-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.settings-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition-smooth);
+}
+
+.settings-btn:hover, .settings-btn.active {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px var(--primary-glow);
+    background: hsl(264, 82%, 65%);
+}
+
+.settings-btn-secondary {
+    background: var(--surface-glass);
+    border: 1px solid var(--surface-glass-border);
+    color: var(--text-main);
+}
+
+.settings-btn-secondary:hover{
+    background: hsla(240, 5%, 20%, 0.5);
+}
+
+
+.settings-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 10px;
+    background: var(--surface-glass);
+    border: 1px solid var(--surface-glass-border);
+    border-radius: 16px;
+    padding: 15px;
+    min-width: 280px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+    backdrop-filter: var(--glass-blur);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: var(--transition-smooth);
+    z-index: 100;
+}
+
+.settings-dropdown.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.settings-menu-header {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-main);
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--surface-glass-border);
+}
+
+.settings-item {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 15px;
+}
+
+.settings-item:last-child {
+    margin-bottom: 0;
+}
+
+.settings-label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+}
+
+.settings-toggle-btn {
+    background: var(--surface-dark);
+    border: 1px solid var(--surface-glass-border);
+    color: var(--text-main);
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: var(--transition-smooth);
+    width: 100%;
+    text-align: left;
+}
+
+.settings-toggle-btn:hover {
+    border-color: var(--primary-color);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.settings-engine-toggle {
+    width: 100%;
+    margin-bottom: 0;
+}
+
+.settings-engine-toggle .engine-toggle-label {
+    min-width: unset;
+    flex: 1;
+    padding: 6px 12px;
+}
