@@ -85,6 +85,18 @@ def search_page(db, query):
 
 @app.route('/download/<string:serv>/<string:id>/')
 def download_shiki_choose_translation(serv, id):
+    """
+    Render info page with available translations and metadata for a Shikimori or Kinopoisk item.
+    
+    Parameters:
+        serv (str): Service identifier — "sh" for Shikimori or "kp" for Kinopoisk.
+        id (str): Item identifier for the requested title.
+    
+    Returns:
+        A rendered info.html response populated with translations, series count and metadata for the requested item.
+        If the external data fetch fails, returns a simple HTML error message indicating no data.
+        If `serv` is not "sh" or "kp", aborts with HTTP 400.
+    """
     cache_wasnt_used = False
     if serv == "sh":
         if ch_use and ch.is_id("sh"+id) and ch.get_data_by_id("sh"+id)['serial_data'] != {}:
@@ -430,6 +442,20 @@ def change_room_quality(rid, quality):
 @app.route('/fast_download_act/<string:id_type>-<string:id>-<int:seria_num>-<string:translation_id>-<string:quality>/')
 @app.route('/fast_download_act/<string:id_type>-<string:id>-<int:seria_num>-<string:translation_id>-<string:quality>-<int:max_series>/')
 def fast_download_work(id_type: str, id: str, seria_num: int, translation_id: str, quality: str, max_series: int = 12):
+    """
+    Generate a fast-download package for a specific title/episode and return it as a downloadable file response.
+    
+    Parameters:
+        id_type (str): Server identifier type (e.g., "sh" or "kp").
+        id (str): Resource identifier for the title.
+        seria_num (int): Episode number (use 0 for whole-title or non-episodic downloads).
+        translation_id (str): Translation/track identifier used to label the file and metadata.
+        quality (str): Desired video quality label (e.g., "720", "1080").
+        max_series (int): Maximum number of series digits to use when zero-padding episode numbers (default 12).
+    
+    Returns:
+        A Flask response that sends the generated file as an attachment, or an HTTP error response when generation fails.
+    """
     translation = translations[translation_id] if translation_id in translations else "Неизвестно"
     add_zeros = len(str(max_series))
     if config.USE_SAVED_DATA and ch.is_id('sh'+id):
@@ -505,10 +531,25 @@ def broadcast(data):
 @app.route('/help/')
 def help():
     # Заглушка
+    """
+    Redirects the client to the project's README on GitHub.
+    
+    Returns:
+        A Flask redirect response that points the client to the repository README URL.
+    """
     return redirect("https://github.com/1Dradon1/anime-site/blob/main/README.MD")
 
 @app.route('/resources/<string:path>')
 def resources(path: str):
+    """
+    Serve a file from the application's resources directory if it exists; abort with 404 otherwise.
+    
+    Parameters:
+        path (str): Relative path to the resource file within the resources directory. Both Windows-style (backslash) and Unix-style (forward slash) paths are supported.
+    
+    Returns:
+        A Flask response sending the requested file when found; aborts with a 404 error if the file does not exist.
+    """
     if os.path.exists(f'resources\\{path}'): # Windows-like
         return send_file(f'resources\\{path}')
     elif os.path.exists(f'resources/{path}'): # Unix
@@ -522,11 +563,23 @@ def get_episode(shikimori_id: str, seria_num: int, translation_id: str):
 
 @app.route('/guide')
 def guide():
+    """
+    Render the guide page using the current theme preference.
+    
+    Returns:
+        Response: Rendered HTML for 'guide.html' with `is_dark` set to the session's 'is_dark' value or False if missing.
+    """
     return render_template('guide.html', is_dark=session.get('is_dark', False))
 
 @app.route('/download')
 def download_file():
     # Отправка файла клиенту
+    """
+    Send the bundled application ZIP file to the client as a downloadable attachment.
+    
+    Returns:
+        response: A Flask response object that serves the file "dgnmpv.zip" from the application's static directory and prompts the client to download it.
+    """
     return send_from_directory("./static/", 'dgnmpv.zip', as_attachment=True)
 
 @app.route('/favicon.ico')
