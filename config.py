@@ -1,0 +1,39 @@
+import os
+from dotenv import load_dotenv
+load_dotenv()
+
+# Адрес для доступа
+HOST = os.getenv("HOST") # Такой адрес позволяет получить доступ как через 127.0.0.1, так и через локальный адрес компьютера (позволяет получить доступ к серверу с других устройств в сети)
+PORT = os.getenv("PORT")
+KODIK_TOKEN = os.getenv("KODIK_TOKEN")
+APP_SECRET_KEY = os.getenv("APP_SECRET_KEY")
+DEBUG = os.getenv("DEBUG") # Debug от Flask
+SHIKIMORI_MIRROR = os.getenv("SHIKIMORI_MIRROR") # Домен зеркало для shikimori. None = параметр из парсера по умолчанию
+USE_KODIK_SEARCH = os.getenv("USE_KODIK_SEARCH")
+
+
+SAVE_DATA = True # Для сохранения результатов парсинга (картинки, названия, ссылки на видео)
+USE_SAVED_DATA = True # Для использования уже сохранённых результатов
+SAVED_DATA_FILE = "cache.json" # Файл с сохранёнными данными (если SAVE_DATA == False и USE_SAVED_DATA == False, файл не обязателен)
+SAVING_PERIOD = 5 # (В минутах) Как часто будет перезаписываться файл с сохранёнными данными
+                   # Сохранение будет производиться только при условии что пользователь воспользовался сайтом
+CACHE_LIFE_TIME = 3 # (В днях) Как часто будет обновляться информация в базе
+
+ALLOW_WATCH_TOGETHER = True # Функция совместного просмотра
+REMOVE_TIME = 5 # (В минутах) Через какое время не используемая комната для совместного просмотра будет удалена
+        # Рекомендуется включить кеширование если, в противном случае для каждого пользователя видео будет искаться отдельно
+
+ALLOW_NSFW = False # Попытка обхода блокировки по возрасту от шикимори
+
+# "/" в начале обязательно
+IMAGE_NOT_FOUND = "/resources/no-image.png" # Картинка для замены ненайденной
+IMAGE_AGE_RESTRICTED = "/resources/age-restricted.png" # Картинка для обозначения контента с ограничениями по возрасту 
+
+# Путь к иконке
+FAVICON_PATH = "resources/A.ico"
+
+
+
+
+# Параметры парсинга
+USE_LXML = True # В некоторых случаях lxml может не работать, можно перейти на стандартный парсер от bs4 прописав False
