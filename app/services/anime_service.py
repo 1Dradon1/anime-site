@@ -39,10 +39,10 @@ class AnimeService:
         ]
         self.priority_index = {name: i for i, name in enumerate(self.priority_order)}
 
-    def get_seria_link(self, shikimori_id: str, seria_num: int, translation_id: str):
+    def get_seria_link(self, item_id: str, seria_num: int, translation_id: str, id_type: str = "shikimori"):
         return self.kodik.get_m3u8_playlist_link(
-            id=shikimori_id,
-            id_type="shikimori",
+            id=item_id,
+            id_type=id_type,
             seria_num=seria_num,
             translation_id=translation_id,
             quality=720

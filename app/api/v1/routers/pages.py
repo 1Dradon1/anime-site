@@ -305,7 +305,7 @@ def watch(request: Request, serv: str, id: str, data: str, seria: int, quality: 
             if ch_use and ch.is_seria("kp" + id, translation_id, seria):
                 url = ch.get_seria("kp" + id, translation_id, seria)
             else:
-                url = anime_service.get_seria_link(id, seria, translation_id)
+                url = anime_service.get_seria_link(id, seria, translation_id, id_type="kinopoisk")
                 if ch_save and not ch.is_seria("kp" + id, translation_id, seria):
                     try:
                         ch.add_seria("kp" + id, translation_id, seria, url)
@@ -372,7 +372,7 @@ def room(request: Request, rid: str):
             if ch_use and ch.is_seria("kp" + id, translation_id, seria):
                 url = ch.get_seria("kp" + id, translation_id, seria)
             else:
-                url = anime_service.get_seria_link(id, seria, translation_id)
+                url = anime_service.get_seria_link(id, seria, translation_id, id_type="kinopoisk")
                 if ch_save and not ch.is_seria("kp" + id, translation_id, seria):
                     try:
                         ch.add_seria("kp" + id, translation_id, seria, url)

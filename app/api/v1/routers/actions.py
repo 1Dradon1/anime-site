@@ -1,8 +1,18 @@
-from fastapi import APIRouter, Request, Form, Depends
-from fastapi.responses import RedirectResponse
+from app.core.config import settings
+from fastapi import APIRouter, Request, Form, Depends, HTTPException
+from fastapi.responses import RedirectResponse, PlainTextResponse
 import urllib.parse
 from app.core.watch_manager import watch_manager
-from app.core.config import settings
+from app.services.anime_service import AnimeService
+from app.repositories.cache_repository import CacheRepository
+
+ch_save = settings.SAVE_DATA
+ch_use = settings.USE_SAVED_DATA
+ch = None
+if ch_use or ch_save:
+    ch = CacheRepository(settings.REDIS_URL, settings.CACHE_LIFE_TIME)
+
+anime_service = AnimeService(cache_repo=ch)
 
 router = APIRouter()
 
@@ -118,3 +128,36 @@ async def change_room_seria_form(request: Request, rid: str):
     watch_manager.update_room(rid, rdata)
     watch_manager.broadcast(rid, {"status": "update_page", "time": 0})
     return RedirectResponse(url=f"/room/{rid}/", status_code=303)
+
+@router.get("/get_episode/{serv}/{shikimori_id}/{seria}/{translation_id}", response_class=PlainTextResponse)
+def get_episode_url(serv: str, shikimori_id: str, seria: int, translation_id: str):
+    """Returns the raw MPV stream URL for the frontend."""
+    quality = 720  # default
+    try:
+        if serv == "sh":
+            id_prefix = "sh"
+            id_type = "shikimori"
+        elif serv == "kp":
+            id_prefix = "kp"
+            id_type = "kinopoisk"
+        else:
+            raise HTTPException(status_code=400, detail="Invalid service")
+            
+        if ch_use and ch and ch.is_seria(id_prefix + shikimori_id, translation_id, seria):
+            url = ch.get_seria(id_prefix + shikimori_id, translation_id, seria)
+        else:
+            url = anime_service.get_seria_link(shikimori_id, seria, translation_id, id_type=id_type)
+            if ch_save and ch and not ch.is_seria(id_prefix + shikimori_id, translation_id, seria):
+                try:
+                    ch.add_seria(id_prefix + shikimori_id, translation_id, seria, url)
+                except KeyError:
+                    pass
+                    
+        if url.startswith("http"):
+            straight_url = url
+        else:
+            straight_url = f"https:{url}{quality}.mp4"
+            
+        return straight_url
+    except Exception as e:
+        raise HTTPException(status_code=404, detail=str(e))

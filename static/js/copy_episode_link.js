@@ -54,9 +54,10 @@ async function fetchAndOpenMPV(event) {
         
         const shikimori_id = episode.getAttribute("data-shikimori-id")
         const translation_id = episode.getAttribute("data-translation-id")
+        const serv = episode.getAttribute("data-serv")
         const ep_value = episode.value
 
-        const response = await fetch(`/get_episode/${shikimori_id}/${ep_value}/${translation_id}`)
+        const response = await fetch(`/get_episode/${serv}/${shikimori_id}/${ep_value}/${translation_id}`)
 
         if (!response.ok) 
             throw new Error(`Ошибка: ${response.status}`)

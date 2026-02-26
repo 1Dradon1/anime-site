@@ -213,6 +213,7 @@
                         <button class="episode-number" value="{{ i }}" 
                                 data-translation-id="{{ translation.id }}" 
                                 data-shikimori-id="{{ id }}"
+                                data-serv="{{ serv }}"
                                 data-web-url="/watch/{{ serv }}/{{ id }}/{{ translation.series_count }}-{{ translation.id }}/{{ i }}/"
                         >{{ i }}</button>
                     {% endfor %}
@@ -220,6 +221,7 @@
                     <button class="episode-number" value="0" 
                             data-translation-id="{{ translation.id }}" 
                             data-shikimori-id="{{ id }}"
+                            data-serv="{{ serv }}"
                             data-web-url="/watch/{{ serv }}/{{ id }}/{{ translation.series_count|default(0) }}-{{ translation.id }}/0/"
                     >Фильм</button>
                 {% endif %}
@@ -240,6 +242,7 @@
                                 <button class="episode-number" value="{{ i }}" 
                                         data-translation-id="{{ translation.id }}" 
                                         data-shikimori-id="{{ id }}"
+                                        data-serv="{{ serv }}"
                                         data-web-url="/watch/{{ serv }}/{{ id }}/{{ translation.series_count }}-{{ translation.id }}/{{ i }}/"
                                 >{{ i }}</button>
                             {% endfor %}
@@ -247,6 +250,7 @@
                             <button class="episode-number" value="0" 
                                     data-translation-id="{{ translation.id }}" 
                                     data-shikimori-id="{{ id }}"
+                                    data-serv="{{ serv }}"
                                     data-web-url="/watch/{{ serv }}/{{ id }}/{{ translation.series_count|default(0) }}-{{ translation.id }}/0/"
                             >Фильм</button>
                         {% endif %}
