@@ -37,16 +37,6 @@
         gap: 10px;
         flex-wrap: wrap;
     }
-    .quality-badge {
-        display: inline-block;
-        padding: 4px 12px;
-        border-radius: 20px;
-        background: var(--primary-glow);
-        color: var(--primary-color);
-        font-size: 0.8rem;
-        font-weight: 600;
-        margin-bottom: 15px;
-    }
 </style>
 {% endblock %}
 
@@ -93,12 +83,13 @@
         </div>
 
         <div class="glass-card" style="padding: 20px;">
-            <h3 style="margin-bottom: 15px; font-size: 1rem; color: var(--text-muted);">Качество и перемотка</h3>
-            <div class="quality-badge">Текущее: {{ quality }}p</div>
-            <div class="control-group" style="margin-bottom: 15px;">
-                <a href="cq-720/" class="btn-modern btn-secondary" style="padding: 6px 12px; font-size: 0.8rem;">720p</a>
-                <a href="cq-480/" class="btn-modern btn-secondary" style="padding: 6px 12px; font-size: 0.8rem;">480p</a>
-                <a href="cq-360/" class="btn-modern btn-secondary" style="padding: 6px 12px; font-size: 0.8rem;">360p</a>
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 20px;">
+                <h3 style="margin: 0; font-size: 1rem; color: var(--text-muted); white-space: nowrap;">Качество:</h3>
+                <div class="control-group">
+                    <a href="cq-720/" class="btn-modern {% if quality|string != '720' %}btn-secondary{% endif %}" style="padding: 6px 12px; font-size: 0.8rem;">720p</a>
+                    <a href="cq-480/" class="btn-modern {% if quality|string != '480' %}btn-secondary{% endif %}" style="padding: 6px 12px; font-size: 0.8rem;">480p</a>
+                    <a href="cq-360/" class="btn-modern {% if quality|string != '360' %}btn-secondary{% endif %}" style="padding: 6px 12px; font-size: 0.8rem;">360p</a>
+                </div>
             </div>
             <div class="control-group">
                 <button onclick="skip_left();" class="btn-modern btn-secondary" style="padding: 8px 15px; font-size: 0.85rem;">- 1:20</button>

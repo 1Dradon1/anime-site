@@ -59,16 +59,6 @@
         border-radius: 12px;
         display: inline-flex;
     }
-    .quality-badge {
-        display: inline-block;
-        padding: 4px 12px;
-        border-radius: 20px;
-        background: var(--primary-glow);
-        color: var(--primary-color);
-        font-size: 0.8rem;
-        font-weight: 600;
-        margin-bottom: 15px;
-    }
     .episode-info {
         margin-bottom: 20px;
         color: var(--text-muted);
@@ -134,13 +124,12 @@
             </div>
 
             <!-- Качество -->
-            <div class="glass-card" style="padding: 15px;">
-                <h3 style="margin-bottom: 10px; font-size: 0.9rem; color: var(--text-muted);">Качество и перемотка</h3>
-                <div class="quality-badge">Текущее: {{ quality }}p</div>
-                <div class="button-group" style="margin-bottom: 15px; flex-wrap: wrap;">
-                    <a href="q-720/" class="btn-modern btn-secondary" style="padding: 6px 12px; font-size: 0.8rem;">720p</a>
-                    <a href="q-480/" class="btn-modern btn-secondary" style="padding: 6px 12px; font-size: 0.8rem;">480p</a>
-                    <a href="q-360/" class="btn-modern btn-secondary" style="padding: 6px 12px; font-size: 0.8rem;">360p</a>
+            <div class="glass-card" style="padding: 15px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+                <h3 style="margin: 0; font-size: 0.9rem; color: var(--text-muted); white-space: nowrap;">Качество:</h3>
+                <div class="button-group" style="flex-wrap: wrap;">
+                    <a href="q-720/" class="btn-modern {% if quality|string != '720' %}btn-secondary{% endif %}" style="padding: 6px 12px; font-size: 0.8rem;">720p</a>
+                    <a href="q-480/" class="btn-modern {% if quality|string != '480' %}btn-secondary{% endif %}" style="padding: 6px 12px; font-size: 0.8rem;">480p</a>
+                    <a href="q-360/" class="btn-modern {% if quality|string != '360' %}btn-secondary{% endif %}" style="padding: 6px 12px; font-size: 0.8rem;">360p</a>
                 </div>
             </div>
 
@@ -264,8 +253,13 @@
         } else {
             qrCode.makeCode(loc);
         }
-        
         timingModalElement.classList.add('active');
+    });
+
+    document.getElementById('mpv_btn_watch').addEventListener("click", function () {
+        // Encode the straight_url so the mpv protocol handler parses it correctly
+        const encodedUrl = encodeURIComponent('{{ straight_url }}');
+        window.location.href = `mpv://${encodedUrl}`;
     });
 </script>
 {% endblock %}
