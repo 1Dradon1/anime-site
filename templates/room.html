@@ -128,8 +128,12 @@
 
 {% block scripts %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" integrity="sha512-CNgIRecGo7nphbeZ04Sc13ka07paqdeTu0WR1IM4kNcpmBAUSHSQX0FslNhTDadL4O5SAGapGt4FodqL8My0mA==" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.8.1/socket.io.js" integrity="sha512-8BHxHDLsOHx+flIrQ0DrZcea7MkHqRU5GbTHmbdzMRnAaoCIkZ97PqZcXJkKZckMMhqfoeaJE+DNUVuyoQsO3Q==" crossorigin="anonymous"></script>
-<script src="{{ url_for('static', filename='js/room_funcs.js') }}"></script>
+<script>
+    const ws_url_raw = "{{ ws_url }}";
+    const WS_URL = ws_url_raw && ws_url_raw !== "None" ? ws_url_raw : (window.location.protocol === 'https:' ? 'wss://' : 'ws://') + window.location.host + '/ws';
+    const JWT_TOKEN = "{{ jwt_token }}";
+</script>
+<script src="{{ url_for('static', path='js/room_funcs.js') }}"></script>
 <script>
     function closeModal(id) {
         document.getElementById(id).classList.remove('active');

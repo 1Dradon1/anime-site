@@ -2,45 +2,67 @@ const video = document.querySelector("video");
 const copy_link_btn = document.querySelector('.copy_link');
 const create_qr_btn = document.querySelector('.create_qr');
 
-var socket = io();
 let hrf = window.location.href;
 let rid = hrf.slice(hrf.slice(0, -5).lastIndexOf('/')+1, -1);
+
+// Connect to FastAPI WebSocket using the WS_URL and JWT_TOKEN injected in room.html
+let socket = new WebSocket(`${WS_URL}/room/${rid}?token=${JWT_TOKEN}`);
 
 let qrCode;
 
 video.onpause = function() {
-    socket.emit("broadcast", {data: {'status': 'paused', 'time': video.currentTime}, rid: rid})
+    socket.send(JSON.stringify({
+        type: "broadcast", 
+        data: {'status': 'paused', 'time': video.currentTime}
+    }));
 }
 
 video.onplay = function() {
-    socket.emit("broadcast", {data: {'status': 'playing', 'time': video.currentTime}, rid: rid})
+    socket.send(JSON.stringify({
+        type: "broadcast", 
+        data: {'status': 'playing', 'time': video.currentTime}
+    }));
 }
 
-socket.on('connect', function() {
-    socket.emit('join', {data: 'I\'m connected!', rid: rid});
-});
+socket.onopen = function() {
+    console.log("Connected to room", rid);
+};
 
-socket.on('message', (event) => {
-    // console.log(`[message] Данные получены с сервера: ${event.data.status}, ${event}`);
-    if (event.data.status == 'loading') {
-        video.currentTime = event.data.time;
+socket.onmessage = function(event) {
+    let msg = JSON.parse(event.data);
+    
+    // Ignore internal connection acks
+    if (msg.status === "connected") return;
+    
+    // Unpack data from standard broadcast
+    let data = msg;
+    if (msg.data && msg.data.status) {
+        data = msg.data;
+    }
+
+    if (data.status == 'loading') {
+        video.currentTime = data.time;
         video.pause();
     }
-    if (event.data.status == 'playing') {
-        video.currentTime = event.data.time;
+    if (data.status == 'playing') {
+        video.currentTime = data.time;
         video.play();
     }
-    if (event.data.status == 'paused') {
-        video.currentTime = event.data.time;
+    if (data.status == 'paused') {
+        video.currentTime = data.time;
         video.pause();
     }
-    if (event.data.status == 'skipping') {
-        video.currentTime = event.data.time;
+    if (data.status == 'skipping') {
+        video.currentTime = data.time;
     }
-    if (event.data.status == 'update_page') {
+    if (data.status == 'update_page') {
         window.location.reload();
     }
-})
+}
+
+socket.onclose = function() {
+    console.log("WebSocket disconnected.");
+}
 
 copy_link_btn.addEventListener("click", () => {
     navigator.clipboard.writeText(hrf)
@@ -84,7 +106,10 @@ function skip_left() {
     } else {
         video.currentTime = 0
     }
-    socket.emit("broadcast", {data: {'status': 'skipping', 'time': video.currentTime}, rid: rid})
+    socket.send(JSON.stringify({
+        type: "broadcast", 
+        data: {'status': 'skipping', 'time': video.currentTime}
+    }));
 };
 function skip_right() {
     if (video.currentTime + 80 < video.duration) {
@@ -92,5 +117,8 @@ function skip_right() {
     } else {
         video.currentTime = video.duration
     }
-    socket.emit("broadcast", {data: {'status': 'skipping', 'time': video.currentTime}, rid: rid})
+    socket.send(JSON.stringify({
+        type: "broadcast", 
+        data: {'status': 'skipping', 'time': video.currentTime}
+    }));
 };

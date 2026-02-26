@@ -59,10 +59,15 @@
 {% block scripts %}
 <script type="application/json" id="search-query">{{ query|tojson }}</script>
 <script type="application/json" id="search-db">{{ db|tojson }}</script>
+<script type="application/json" id="search-api-url">{{ api_url|tojson }}</script>
+<script type="application/json" id="search-jwt">{{ jwt_token|tojson }}</script>
 <script>
     document.addEventListener("DOMContentLoaded", function() {
         const queryStr = JSON.parse(document.getElementById('search-query').textContent);
         const dbStr = JSON.parse(document.getElementById('search-db').textContent);
+        const apiUrlStr = JSON.parse(document.getElementById('search-api-url').textContent) || window.location.origin;
+        const jwtStr = JSON.parse(document.getElementById('search-jwt').textContent);
+        
         const animeContainer = document.getElementById('anime-results');
         const animeHeader = document.getElementById('anime-header');
         const othersSection = document.getElementById('others-section');
@@ -71,7 +76,7 @@
         const noResults = document.getElementById('no-results');
         let totalFound = 0;
 
-        const eventSource = new EventSource(`/api/search/stream/${dbStr}/${encodeURIComponent(queryStr)}/`);
+        const eventSource = new EventSource(`${apiUrlStr}/api/search/stream/${dbStr}/${encodeURIComponent(queryStr)}/?token=${jwtStr}`);
 
         eventSource.onmessage = function(e) {
             const item = JSON.parse(e.data);

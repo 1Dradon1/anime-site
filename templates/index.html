@@ -48,7 +48,7 @@
             <div style="margin-bottom: 30px;">
                 <label for="search-input" style="display: block; text-align: left; margin-bottom: 10px; font-weight: 500;">Название аниме</label>
                 
-                <input type="hidden" name="search_engine" value="{{ session.get('search_engine', 'kdk') }}">
+                <input type="hidden" name="search_engine" value="{{ request.session.get('search_engine', 'kdk') }}">
                 <input class="search-input-modern" id="search-input" name="query" placeholder="Например: Магическая битва" required autocomplete="off">
                 <button type="submit" class="btn-modern" style="width: 100%; margin-top: 20px;">Поиск по названию</button>
             </div>
@@ -93,7 +93,7 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/display_recently.js') }}"></script>
+<script src="{{ url_for('static', path='js/display_recently.js') }}"></script>
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         const advancedToggle = document.getElementById('advancedSearchToggle');

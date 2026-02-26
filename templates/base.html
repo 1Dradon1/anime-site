@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/modern.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', path='css/modern.css') }}">
     <link rel="shortcut icon" href="{{ url_for('favicon') }}" type="image/x-icon">
     {% block head %}{% endblock %}
 </head>
@@ -22,7 +22,7 @@
         <div style="display: flex; justify-content: center; width: 100%; min-width: 400px; max-width: 600px;">
             {% if request.endpoint != 'index' and request.path != '/' %}
             <form method="POST" action="/" style="display: flex; gap: 10px; margin: 0; align-items: center; width: 100%;">
-                <input type="hidden" name="search_engine" value="{{ db if db else session.get('search_engine', 'kdk') }}">
+                <input type="hidden" name="search_engine" value="{{ db if db else request.session.get('search_engine', 'kdk') }}">
                 <input class="search-input-modern" name="query" placeholder="Поиск аниме..." required autocomplete="off" style="padding: 10px 20px; font-size: 0.95rem; margin-bottom: 0; width: 100%;" value="{{ query if query else '' }}">
                 <button type="submit" class="btn-modern btn-secondary" style="padding: 10px 20px; font-size: 0.95rem;">Найти</button>
             </form>
@@ -47,10 +47,10 @@
                     <form method="POST" action="/change_engine/" class="settings-item">
                         <span class="settings-label">База поиска</span>
                         <div class="engine-toggle-container settings-engine-toggle">
-                            <input type="radio" id="menu-engine-kodik" name="search_engine" value="kdk" {% if session.get('search_engine', 'kdk') == 'kdk' %}checked{% endif %} onchange="this.form.submit()">
+                            <input type="radio" id="menu-engine-kodik" name="search_engine" value="kdk" {% if request.session.get('search_engine', 'kdk') == 'kdk' %}checked{% endif %} onchange="this.form.submit()">
                             <label for="menu-engine-kodik" class="engine-toggle-label">Kodik</label>
                             
-                            <input type="radio" id="menu-engine-shiki" name="search_engine" value="sh" {% if session.get('search_engine') == 'sh' %}checked{% endif %} onchange="this.form.submit()">
+                            <input type="radio" id="menu-engine-shiki" name="search_engine" value="sh" {% if request.session.get('search_engine') == 'sh' %}checked{% endif %} onchange="this.form.submit()">
                             <label for="menu-engine-shiki" class="engine-toggle-label">Shikimori</label>
                             
                             <div class="engine-toggle-slider"></div>

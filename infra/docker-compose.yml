@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: always
+
+  celery_worker:
+    build: 
+      context: ..
+    command: celery -A app.core.celery_app worker -l info --concurrency 4
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - KODIK_TOKEN=${KODIK_TOKEN}
+    volumes:
+      - ..:/app
+      - ../tmp:/app/tmp
+    depends_on:
+      - redis
+    restart: always
+
+volumes:
+  redis_data:

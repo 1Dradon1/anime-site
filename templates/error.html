@@ -9,7 +9,7 @@
         <h2 style="font-size: 2rem; margin: 1rem 0; color: var(--text-main);">Произошел сбой в системе</h2>
         <p style="color: var(--text-muted); margin-bottom: 2.5rem; max-width: 400px; font-size: 1.1rem;">
             Что-то пошло не так на нашей стороне. Попробуйте обновить страницу или вернуться позже.
-            {% if debug_msg and config.DEBUG %}
+            {% if debug_msg %}
             <br><br>
             <code style="display: block; padding: 10px; background: rgba(0,0,0,0.1); border-radius: 8px; font-size: 0.8rem; text-align: left; overflow-x: auto;">
                 {{ debug_msg }}

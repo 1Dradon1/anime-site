@@ -39,9 +39,9 @@
     }
     .secondary-controls {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
         gap: 20px;
-        margin-top: 10px;
+        margin-top: 15px;
     }
     .jump-form {
         display: flex;
@@ -58,6 +58,16 @@
         padding: 15px;
         border-radius: 12px;
         display: inline-flex;
+    }
+    .quality-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 20px;
+        background: var(--primary-glow);
+        color: var(--primary-color);
+        font-size: 0.8rem;
+        font-weight: 600;
+        margin-bottom: 15px;
     }
     .episode-info {
         margin-bottom: 20px;
@@ -123,15 +133,26 @@
                 </form>
             </div>
 
+            <!-- Качество -->
+            <div class="glass-card" style="padding: 15px;">
+                <h3 style="margin-bottom: 10px; font-size: 0.9rem; color: var(--text-muted);">Качество и перемотка</h3>
+                <div class="quality-badge">Текущее: {{ quality }}p</div>
+                <div class="button-group" style="margin-bottom: 15px; flex-wrap: wrap;">
+                    <a href="q-720/" class="btn-modern btn-secondary" style="padding: 6px 12px; font-size: 0.8rem;">720p</a>
+                    <a href="q-480/" class="btn-modern btn-secondary" style="padding: 6px 12px; font-size: 0.8rem;">480p</a>
+                    <a href="q-360/" class="btn-modern btn-secondary" style="padding: 6px 12px; font-size: 0.8rem;">360p</a>
+                </div>
+            </div>
+
             <!-- Вместе / QR -->
-            <div class="glass-card" style="padding: 15px; display: flex; gap: 10px;">
+            <div class="glass-card" style="padding: 15px; display: flex; gap: 10px; align-items: center;">
                 {% if allow_watch_together %}
-                <form action="/create_room/" method="POST" style="margin: 0; flex: 1;">
-                    <button type="submit" class="btn-modern" style="width: 100%; white-space: nowrap;">👥 Смотреть вместе</button>
+                <form action="/create_room/" method="POST" style="margin: 0; flex: 2;">
+                    <button type="submit" class="btn-modern" style="width: 100%; white-space: nowrap; padding: 10px 15px;">👥 Смотреть вместе</button>
                 </form>
                 {% endif %}
-                <button id="mpv_btn_watch" class="btn-modern btn-secondary" style="flex: 1;">🖥️ Открыть в MPV</button>
-                <button id="create_qr_btn" class="btn-modern btn-secondary" style="flex: 1;">📱 QR</button>
+                <button id="mpv_btn_watch" class="btn-modern btn-secondary" style="flex: 1.2; white-space: nowrap; padding: 10px 10px; font-size: 0.85rem;">🖥️ MPV</button>
+                <button id="create_qr_btn" class="btn-modern btn-secondary" style="flex: 0.8; white-space: nowrap; padding: 10px 10px; font-size: 0.85rem;">📱 QR</button>
             </div>
         </div>
     </div>

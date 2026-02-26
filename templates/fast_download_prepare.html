@@ -21,7 +21,7 @@
             Если возникнет ошибка времени ожидания — перезагрузите страницу.
         </div>
         
-        <button class="btn-modern btn-secondary" onclick="window.location.replace(past_url)">
+        <button class="btn-modern btn-secondary" onclick="window.location.replace('{{ past_url }}')">
             Вернуться назад
         </button>
     </div>
@@ -29,18 +29,46 @@
 {% endblock %}
 
 {% block scripts %}
-<script id="redirect-data" type="application/json">
-    {
-        "past_url": {{ past_url|tojson }},
-        "url": {{ url|tojson }}
-    }
-</script>
 <script>
-    const redirectData = JSON.parse(document.getElementById('redirect-data').textContent);
-    const past_url = redirectData.past_url;
-    // Даем небольшую задержку перед переходом, чтобы пользователь успел прочитать
-    setTimeout(() => {
-        window.location.replace(redirectData.url);
-    }, 1000);
+    const past_url = "{{ past_url }}"; // Make past_url available for the button
+    const download_init_url = "{{ url }}"; // URL to start the download task
+
+    async function pollTask(taskId) {
+        const check = async () => {
+            const res = await fetch(`/api/tasks/${taskId}`);
+            const data = await res.json();
+            
+            if (data.status === "SUCCESS") {
+                document.getElementById('headertext').innerText = 'Загружаем...';
+                window.location.href = `/api/downloads/${data.result.hash}/${data.result.filename}`;
+            } else if (data.status === "FAILURE") {
+                document.getElementById('headertext').innerText = 'Ошибка сборки видео!';
+                document.getElementById('spinner').style.display = 'none';
+            } else {
+                // Keep polling
+                setTimeout(check, 3000);
+            }
+        };
+        setTimeout(check, 1000); // Initial check after 1 second
+    }
+
+    async function startDownloadTask() {
+        const res = await fetch(download_init_url);
+        if (res.ok) {
+            const data = await res.json();
+            if (data.task_id) {
+                pollTask(data.task_id);
+            } else {
+                // Handle cases where task_id might not be immediately available or response is unexpected
+                document.getElementById('headertext').innerText = 'Ошибка: Не удалось получить ID задачи.';
+                document.getElementById('spinner').style.display = 'none';
+            }
+        } else {
+            document.getElementById('headertext').innerText = 'Ошибка инициализации скачивания!';
+            document.getElementById('spinner').style.display = 'none';
+        }
+    }
+
+    window.onload = startDownloadTask;
 </script>
 {% endblock %}
